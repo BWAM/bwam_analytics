@@ -1,9 +1,15 @@
-# Preface {.unnumbered}
+# Welcome {.unnumbered}
 
-This is a Quarto book.
+The goals of this quarto book are to:
 
-To learn more about Quarto books visit <https://quarto.org/docs/books>.
+1.  Document the where the Bureau of Water Assessment and Management (BWAM) data are stored and how it is structured
 
-```{r}
-1 + 1
-```
+2.  Describe how to access BWAM data
+
+3.  Provide examples of how to query and perform analytics on BWAM data
+
+4.  Describe how to maintain BWAM data
+
+## Issues and Edits
+
+If you identify an issue with the content and/or you would like to edit a page of this book, please select the "Edit this page" or "Report an issue" text at the top right of the page.
