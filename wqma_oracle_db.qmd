@@ -6,7 +6,7 @@ title: "Untitled"
 
 ## Connecting to the WQMA Data Warehouse
 
-If you have not already, please setup an ODBC connection to the WQMA data warehouse following the instructions in the @sec-odbc section.
+If you have not already, please setup an ODBC connection to the WQMA data warehouse following the instructions in the ODBC section.
 
 ### Install nexus
 
