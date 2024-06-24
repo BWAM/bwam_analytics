@@ -12,6 +12,8 @@ book:
   chapters:
     - index.qmd
 
+    - wqma_oracle_db.qmd
+
     - analytical_data_store.qmd
 
     - references.qmd

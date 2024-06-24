@@ -198,3 +198,27 @@ Please note that the query above excludes non-detects using the `na.rm = TRUE` a
 :::
 
 ## Common Queries
+
+### Waterbody Data from a Specific Time Period
+
+What data were collected in Otsego Lake from 2022-2023?
+
+1.  Connect to the result data store.
+
+2.  Subset the rows to only the rows where:
+
+    1.  The waterbody name is "Otsego Lake"
+
+    2.  The sampling date is between 2022 and 2023
+
+3.  Load the queried data into R.
+
+```{r}
+otsego_df <- open_dataset(obt_dir) |> # 1
+  filter(WATERBODY_NAME %in% "Otsego Lake", # 2.1
+         between(EVENT_DATETIME, # 2.2
+                 left = lubridate::ymd("2022-01-01"),
+                 right = lubridate::ymd("2023-12-31"))
+  ) |> 
+  collect() # 3
+```

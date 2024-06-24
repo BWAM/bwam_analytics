@@ -1,0 +1,469 @@
+---
+title: "Untitled"
+---
+
+# WQMA Data Warehouse
+
+## Connecting to the WQMA Data Warehouse
+
+If you have not already, please setup an ODBC connection to the WQMA data warehouse following the instructions in the @sec-odbc section.
+
+### Install nexus
+
+The `nexus` package is available on GitHub. To install packages from GitHub, first install the package, `pak`.
+
+```{r, eval=FALSE}
+install.packages("pak")
+```
+
+Use `pak` to install the `nexus` package from GitHub. The code below specifies the organization ("BWAM") and the repository ("nexus"). If this fails, try the next code chunk.
+
+```{r, eval=FALSE}
+pak::pak("BWAM/nexus")
+```
+
+If **pak** fails to install the package, try using **devtools** and **gitcreds**. The difficulty with this option is you must install a GitHub PAT. To setup a PAT, see [Managing Git(Hub) Credentials](https://usethis.r-lib.org/articles/git-credentials.html#get-a-personal-access-token-pat).
+
+```{r, eval=FALSE}
+devtools::install_github(
+  repo = "BWAM/nexus",
+  auth_token = gitcreds::gitcreds_get()$password)
+```
+
+### Get Connected
+
+To work with the data warehouse, you must first connect to it. This is very similar to specifying specifying a file directory containing multiple CSV files you want to import into R. `nexus` provides the function, `get_connected()`, to simplify the process for connecting to the data warehouse. At a minimum, you must provide your data warehouse username. You will be prompted to enter your password in a pop-up window. You should never supply your password in plain text because it increases the chances you accidentally share your password with others. For example, it is very easy to accidentally share your password when committing and pushing other changes to GitHub.
+
+```{r, echo=FALSE}
+con <- nexus::get_connected(username = "ZSMITH",
+                            keyring = "WQMAP")
+```
+
+```{r, eval=FALSE}
+con <- nexus::get_connected(username = "ZSMITH")
+```
+
+### Understanding the Data Warehouse Structure
+
+A primary goal of the WQMA Data Warehouse and **nexus** is to allow users to focus on the task at hand and **NOT** have to spend much energy cleaning data or learning how tables relate to one another. This section outlines a number of functions that can be used to rapidly learn about the data warehouse and it's contents.
+
+#### Tables and Columns and Definitions, Oh My!
+
+The **DBI** function, `dbListTables()`, can be used to get a vector of tables in a database. For the WQMA data warehouse, we also need to specify the name of the schema we want to explore.
+
+```{r}
+DBI::dbListTables(con, schema_name = "WQMA_OWNER")
+```
+
+However, it is recommended that you use the **nexus** `get_data_dictionary()` function because it provides much more information than `dbListTables()`. Setting the argument `just_tables = TRUE` will return [tibble](https://tibble.tidyverse.org/) (i.e., a fancy data frame) of all tables in the data warehouse and their definitions.
+
+```{r}
+(dictionary <- nexus::get_data_dictionary(just_tables = TRUE))
+```
+
+Running `get_data_dictionary()` with all the default arguments will return all table and column definitions in the data warehouse.
+
+```{r}
+(dictionary <- nexus::get_data_dictionary())
+```
+
+The dictionary contains an `examples` field that provides examples of the type of data contained in each column. If there are less than 20 unique values in a column, all possible values are shown. For example, you can see all of the possible values for `WATERBODY_TYPE` using the following code:
+
+```{r}
+dictionary |> 
+  dplyr::filter(table_name %in% "WATERBODY",
+                column_name %in% "WATERBODY_TYPE") |> 
+  dplyr::pull(examples)
+```
+
+You can supply a character vector of table names to the argument `table_vec` to subset the tibble to only the table or tables of interest. The example below, only shows the definitions for the **BASIN** and **WATERBODY** tables.
+
+```{r}
+(dictionary <- nexus::get_data_dictionary(table_vec = c("BASIN",
+                                                        "WATERBODY")))
+```
+
+Similar to `table_vec`, you can supply a character vector of column names to the argument `column_vec` to subset the tibble to only the column or columns of interest. This is useful for:
+
+1.  Getting the definition of a column(s) of interest.
+
+2.  Quickly identifying which table a column comes from.
+
+The example below shows the definitions for two columns of interest from two different tables.
+
+```{r}
+(dictionary <- nexus::get_data_dictionary(
+  column_vec = c("BASIN_NAME",
+                 "WATERBODY_NAME")
+))
+```
+
+### Get Data
+
+#### Single Table Queries
+
+To query data from a single table you can use functions from the **dplyr** and **DBI** packages. Below I have established a remote connection to the *BASIN* table in the data warehouse. I have not yet pulled the data into R. You may think of this as a preview of the data that you will pull into R. As you can see, you need to provide a connection to a database, the schema, and the table name.
+
+```{r}
+(basin_tbl <- dplyr::tbl(con,
+                        I("WQMA_OWNER.BASIN")))
+```
+
+To bring the data into R, you need to use the **dplyr** function, `collect()`.
+
+```{r}
+(basin_df <- dplyr::collect(basin_tbl))
+```
+
+You can use **dplyr** functions to work with the data in the database. **dplyr** will translate these functions to SQL for you.
+
+This example: 1. Uses the `basin_tbl` connection established before 2. Filters the `BASIN` column to the rows that represent the major drainage basins "03" and "07" 3. Retains only the `BASIN_NAME` column 4. Collects the data from the database and into R.
+
+```{r}
+# 1
+basin_tbl |> 
+# 2
+  dplyr::filter(BASIN %in% c("03", "07")) |> 
+# 3
+  dplyr::select(BASIN_NAME) |> 
+# 4
+  dplyr::collect()
+```
+
+This example: 1. Connects to the "EVENT" table 2. filters to the rows were the `EVENT_DATETIME` column to only the events that occurred between July 1-7th of 2022. 3. Collects the data from the database and into R.
+
+```{r}
+# 1
+dplyr::tbl(con,
+           I("WQMA_OWNER.EVENT")) |> 
+# 2
+  dplyr::filter(
+    dplyr::between(
+      x = EVENT_DATETIME,
+      left = to_date("2022-07-01", "YYYY-MM-DD HH24:MI:SS"),
+      right = to_date("2022-07-07", "YYYY-MM-DD HH24:MI:SS")
+    )
+  ) |> 
+# 3
+  dplyr::collect()
+```
+
+#### Multiple Table Queries (Or Operating on the Data Model)
+
+In most situations, it is recommended that you acquire data using the `get_data_model()` function from **nexus**. This function has been tailored to connect to establish a remote connection to each table in the data warehouse and define the relationships between tables.
+
+```{r}
+(data_model <- nexus::get_data_model(con = con))
+```
+
+We can visualize the table relationships with the `get_erd()` function.
+
+```{r}
+nexus::get_erd(data_model)
+```
+
+If you want to collect a single table, such as *BASIN*, you can use the following code. The `get_data_model()` function hides some of the complexity of connecting to the table through **dplyr**, such as establishing the schema, and makes it simple to import data into R.
+
+```{r}
+(basin_df2 <- data_model$BASIN |> 
+  dplyr::collect())
+```
+
+Or...
+
+```{r}
+(basin_df2 <- data_model |> 
+   dm::pull_tbl(table = "BASIN") |> 
+  dplyr::collect())
+```
+
+### Example Queries
+
+You cannot import all data from the WQMA Data Warehouse into the R-- the connection will time out or you will crash your R session. However, there is no need to read in all data to R. With **DBI**, **dplyr**, **dm**, and **nexus** you have the ability to do the following and more within the database:
+
+-   preview data
+
+-   filter data
+
+-   select only the columns of interest
+
+-   join tables together
+
+You should try to narrow your focus to the smallest amount of data you need for your task. Queries will return results much faster if you limit the number of rows and columns that need to be transferred from the data warehouse into R. This might mean filtering the rows by basin, waterbody, site, sampling event, project, parameter, etc. or a combination of these factors to get only the data necessary. Similarly, selecting only the tables and columns of interest will help to speed queries up.
+
+If you are feeling nervous about not pulling all data in, I hope that it
+
+**nexus** is designed to work with the R-package, [**dm**](https://dm.cynkra.com/). [**dm**](https://dm.cynkra.com/) stands for "data model" and [it provides a number of useful functions for working with relational data](https://dm.cynkra.com/reference/index.html) and [has great documentation on how to use those functions](https://dm.cynkra.com/) (see Tutorials, Cheatsheet, and Technical Articles on the **dm** website). Many of the functions are designed to both execute locally in R and to be translated into a SQL query to be executed by a relational database or data warehouse. When possible, it is recommended that you favor **dm** queries over **dbplyr**, **DBI**, and custom SQL queries. It is not bad to write **dbplyr**, **DBI**, and custom SQL queries, but **dm** provides an elegant syntax for leveraging relational data that would be very difficult and time intensive to re-implement with other tools; in other words, **dm** is generally more efficient because easier to write and understand.
+
+#### Lake Sites with Phosphorus Data Collected in the last 5-Years
+
+1.  Define the time period of interest as `start_date` and `end_date`
+2.  Start with the `data_model` object defined previously
+3.  Filter the `WATERBODY` table to only the rows where the column `WATERBODY_TYPE` is "lake".
+4.  Filter the `PARAMETER` table to only the rows where the column `PARAMTER_NAME` is "phosphorus".
+5.  Filter the `EVENT` table to only the rows where the column `EVENT_DATETIME` represents a date in the last 5-years.
+6.  In this case, we are only interested in the `SITE` table. It's important to note that we can use the data model to perform queries on tables besides the `SITE` table that ultimately influence the rows of the `SITE` table returned.
+7.  In this case, we are only interested in keeping the columns associated with the site identifier, `SITE_CODE`, and the sites coordinates (`LATITUDE` and `LONGITUDE`).
+8.  Collects the data from the database and into R.
+
+```{r}
+# 1
+start_date <- Sys.Date() - lubridate::years(5)
+end_date <- Sys.Date()
+
+site_remote <- data_model |> # 2
+  dm::dm_filter(
+    WATERBODY = WATERBODY_TYPE == "lake", # 3
+    PARAMETER = PARAMETER_NAME == "phosphorus", # 4
+  EVENT = dplyr::between( # 5
+    x = EVENT_DATETIME,
+    left = to_date(start_date, "YYYY-MM-DD HH24:MI:SS"),
+    right = to_date(end_date, "YYYY-MM-DD HH24:MI:SS")
+  )
+  ) |>
+  dm::pull_tbl(SITE) |>  # 6
+  dplyr::select( # 7
+    SITE_CODE,
+    LATITUDE,
+    LONGITUDE
+  )
+
+site_dm <- dplyr::collect(site_remote) # 8
+```
+
+#### Site
+
+```{r}
+site_remote <- dm::dm_filter(data_model,
+                             SITE = SITE_CODE %in% c("07-ONON-1.0"))
+```
+
+```{r}
+site_dm <- dplyr::collect(site_remote)
+```
+
+```{r}
+(single_df <- site_dm |> 
+  dm::dm_flatten_to_tbl(.start = RESULT, .recursive = TRUE) |> 
+  dplyr::select(
+    EVENT_ID,
+    SITE_CODE,
+    REPLICATE,
+    SAMPLE_METHOD,
+    SAMPLE_METHOD_DESCRIPTION,
+    PARAMETER_NAME,
+    RESULT_VALUE,
+    UNIT,
+    LATITUDE,
+    LONGITUDE,
+    BASIN,
+    BASIN_NAME,
+    WATERBODY_NAME,
+    WATERBODY_TYPE
+  ))
+```
+
+#### Project
+
+```{r}
+project_remote <- data_model |> 
+  dm::dm_filter(PROJECT = PROJECT_TYPE == "RIBS Routine") |> 
+  dm::dm_select_tbl(
+    WATERBODY,
+    SITE,
+    EVENT,
+    SAMPLE,
+    RESULT,
+    PARAMETER
+  )
+```
+
+```{r}
+project_dm <- dplyr::collect(project_remote)
+```
+
+```{r}
+(single_df <- project_dm |> 
+  dm::dm_flatten_to_tbl(.start = RESULT, .recursive = TRUE) |> 
+  dplyr::select(
+    EVENT_ID,
+    SITE_CODE,
+    REPLICATE,
+    SAMPLE_METHOD,
+    SAMPLE_METHOD_DESCRIPTION,
+    PARAMETER_NAME,
+    RESULT_VALUE,
+    UNIT,
+    LATITUDE,
+    LONGITUDE,
+    BASIN,
+    WATERBODY_NAME,
+    WATERBODY_TYPE
+  ))
+```
+
+#### Parameter
+
+```{r}
+chloride_remote <- dm::dm_filter(data_model,
+                             PROJECT = PROJECT_TYPE == "RIBS Routine",
+                             PARAMETER = PARAMETER_NAME == "chloride")
+```
+
+```{r}
+chloride_dm <- dplyr::collect(chloride_remote)
+```
+
+```{r}
+(single_df <- chloride_dm |> 
+  dm::dm_flatten_to_tbl(.start = RESULT, .recursive = TRUE) |> 
+  dplyr::select(
+    EVENT_ID,
+    SITE_CODE,
+    REPLICATE,
+    SAMPLE_METHOD,
+    SAMPLE_METHOD_DESCRIPTION,
+    PARAMETER_NAME,
+    RESULT_VALUE,
+    UNIT,
+    LATITUDE,
+    LONGITUDE,
+    BASIN,
+    BASIN_NAME,
+    WATERBODY_NAME,
+    WATERBODY_TYPE
+  ))
+```
+
+## Setup Oracle ODBC Connection{sec-odbc}
+
+### Objective
+
+Setup an ODBC connection to the WQMA Data Warehouse.
+
+### What is an ODBC?
+
+ODBC stands for Open Database Connectivity and, once configured accordingly, it allows the user to connect to a database from another program, such as R.
+
+### Oracle's Instant Client ODBC Driver
+
+> Oracle's Instant Client ODBC software is a standalone package that offers the full functionality of the Oracle ODBC driver (except the Oracle service for Microsoft Transaction Server) with a simple install. --From: <https://www.oracle.com/database/technologies/releasenote-odbc-ic.html>
+
+In other words, Oracle's Instant Client is a set of software that needs to be installed on your computer in order for you to connect to an Oracle database.
+
+::: callout-caution
+I don't care what Oracle says, this is anything but simple for the average user.
+:::
+
+::: callout-note
+I was directed to the Oracle Instant Client from [Posit's webpage on connecting to an Oracle database.](https://solutions.posit.co/connections/db/databases/oracle/).
+:::
+
+### Procedure
+
+1.  Visit [Oracle's Instant Client ODBC Release Notes webpage](https://www.oracle.com/database/technologies/releasenote-odbc-ic.html)
+
+2.  Follow the instructions in Installing Oracle Instant Client ODBC/On Windows section. You must first install the Instant Client Basic package and then install the Instant Client ODBC package. I have copied and modified the text from the webpage to try and make the steps easier to follow.
+
+    1.  *"Install the Instant Client Basic or Basic Light package, as described above."*
+
+        1.  Follow the instructions at the head of the page in the "**Installing Oracle Instant Client Basic and Basic Lite"** section, which boils down to Installing Oracle's Instant Client from [here](https://www.oracle.com/database/technologies/instant-client/downloads.html).
+
+        2.  Select the **Instant Client for Microsoft Windows (x64)**.
+
+        3.  Select the most recent version of Instant Client for Microsoft Windows and a table will expand.
+
+        4.  Download the Basic Package to the root of your Downloads folder. You cannot download the file directly to your C-drive (C:\\).
+
+        5.  Right-click on the downloaded zip file in your Downloads folder, select Extract All, browse to your C-drive (C:\\), and select Extract.
+
+    2.  *"Download the [Instant Client ODBC package](https://www.oracle.com/database/technologies/instant-client/downloads.html). Unzip it in the same directory as your Basic or Basic Light package."*
+
+        1.  The ODBC package is located on the same downloads page as the Basic Package installed in step 2.1 above. If you need to navigate back to this page, follow steps in 2.1.1 - 2.1.3.
+
+        2.  Scroll down until you see the ODBC Package– it is under the subheading: **Development and Runtime - optional packages.**
+
+        3.  Install the ODBC package to your Downloads folder. You cannot download the file directly to your C-drive (C:\\).
+
+        4.  Right-click on the downloaded zip file in your Downloads folder, select Extract All, browse to your C-drive (C:\\), select the folder you created in step 2.1.5, and select Extract.
+
+    3.  The C-drive directory, created in step 2.1, must be put on your computers PATH.
+
+        1.  In your Windows Search Bar, look up and open "Edit the system environmental variables."
+
+        2.  In the Advanced tab of the pop-up window, click the "Environmental Variables..." button
+
+        3.  **This step requires admin-rights.**
+
+            1.  In the "System variables" section,:
+
+                1.  find the existing "Path" variable
+
+                2.  select the "Path" row
+
+                3.  click on the "Edit..." button
+
+            2.  In the pop-up:
+
+                1.  Click on the "New" button
+
+                2.  Click on the "Browse..." button
+
+                3.  Select the C-drive path to the instant client directory created in step 2.1
+
+    4.  **This step requires admin-rights.** *"Execute `odbc_install.exe` from the Instant Client directory."*
+
+        1.  Navigate to the folder created in step 2.2.4.
+
+        2.  Double-click the *`odbc_install.exe.`*
+
+3.  Setup a 64-bit ODBC connection.
+
+    1.  In your Windows search bar, type "ODBC Data Sources".
+
+    2.  Select the Option that ends in "64-bit".
+
+    3.  In the window that appears, select the "Add" button.
+
+    4.  Select the Oracle Instant Client option (should look something like this: "Oracle in instant_client_19_19") and click the "Finish" button. If you do not see the Oracle Instant Client Option, then your ODBC installation was not successful. Please try to install the ODBC again.
+
+    5.  Configuration:
+
+        1.  Data Source Name: wqma_prod
+
+        2.  Description: WQMA Data Warehouse Production Version
+
+        3.  TNS Service Name: WQMAP
+
+        4.  User ID: \[Enter your database User ID\]
+
+            -   Example: JDOE
+
+        5.  Click on the "Test Connection" Button, enter your database password, and click on the "OK" button. If there are no errors, you should receive a message stating "Connection successful."
+
+            -   If you are entering a temporary password, you will be prompted for a new password.
+
+        6.  Click the "OK" button in the Oracle ODBC Driver Configuration window.
+
+4.  Congratulations! You have successfully downloaded, installed, and configured the necessary software to connect to an Oracle database.
+
+### Keyring Setup (Optional)
+
+If you do not want to enter your password each time you establish a connection, you can setup a [keyring](https://keyring.r-lib.org/) to securely store and access your password. Again, you should **NEVER** type out your password in plain text.
+
+```{r, eval=FALSE}
+keyring::key_set("your-user-name",
+                 keyring = "wqma-example")
+```
+
+```{r, eval=FALSE}
+keyring::key_get("your-user-name",
+                 keyring = "wqma-example")
+```
+
+Once the keyring is established, you can point to the keyring in the `get_connected()` function using the `kerying` argument and you will not need to provide your password each time you connect to the WQMA data warehouse.
+
+```{r, eval=FALSE}
+con <- nexus::get_connected(username = "your-user-name",
+                            keyring = "wqma-example")
+```

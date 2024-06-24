@@ -8,7 +8,7 @@
 
 <meta name="author" content="Zachary M. Smith">
 
-<title>BWAM Analytics - 1&nbsp; analytical_data_store</title>
+<title>BWAM Analytics - 2&nbsp; analytical_data_store</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -66,7 +66,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <script src="site_libs/quarto-search/quarto-search.js"></script>
 <meta name="quarto:offset" content="./">
 <link href="./references.html" rel="next">
-<link href="./index.html" rel="prev">
+<link href="./wqma_oracle_db.html" rel="prev">
 <script src="site_libs/quarto-html/quarto.js"></script>
 <script src="site_libs/quarto-html/popper.min.js"></script>
 <script src="site_libs/quarto-html/tippy.umd.min.js"></script>
@@ -116,7 +116,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
       <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
         <i class="bi bi-layout-text-sidebar-reverse"></i>
       </button>
-        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./analytical_data_store.html"><span class="chapter-number">1</span>&nbsp; <span class="chapter-title">analytical_data_store</span></a></li></ol></nav>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./analytical_data_store.html"><span class="chapter-number">2</span>&nbsp; <span class="chapter-title">analytical_data_store</span></a></li></ol></nav>
         <a class="flex-grow-1" role="button" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
         </a>
       <button type="button" class="btn quarto-search-button" aria-label="" onclick="window.quartoOpenSearch();">
@@ -152,13 +152,19 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
         <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="./index.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Preface</span></a>
+ <span class="menu-text">Welcome</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./wqma_oracle_db.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">1</span>&nbsp; <span class="chapter-title">Untitled</span></span></a>
   </div>
 </li>
         <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="./analytical_data_store.html" class="sidebar-item-text sidebar-link active">
- <span class="menu-text"><span class="chapter-number">1</span>&nbsp; <span class="chapter-title">analytical_data_store</span></span></a>
+ <span class="menu-text"><span class="chapter-number">2</span>&nbsp; <span class="chapter-title">analytical_data_store</span></span></a>
   </div>
 </li>
         <li class="sidebar-item">
@@ -177,9 +183,15 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     <h2 id="toc-title">Table of contents</h2>
    
   <ul>
-  <li><a href="#analytical-data-store" id="toc-analytical-data-store" class="nav-link active" data-scroll-target="#analytical-data-store"><span class="header-section-number">2</span> Analytical Data Store</a>
+  <li><a href="#analytical-data-store" id="toc-analytical-data-store" class="nav-link active" data-scroll-target="#analytical-data-store"><span class="header-section-number">3</span> Analytical Data Store</a>
   <ul class="collapse">
-  <li><a href="#just-give-me-data" id="toc-just-give-me-data" class="nav-link" data-scroll-target="#just-give-me-data"><span class="header-section-number">2.0.1</span> ⏩Just Give Me Data</a></li>
+  <li><a href="#just-give-me-the-data" id="toc-just-give-me-the-data" class="nav-link" data-scroll-target="#just-give-me-the-data"><span class="header-section-number">3.0.1</span> Just Give Me the Data</a></li>
+  <li><a href="#parquet-and-arrow-introduction" id="toc-parquet-and-arrow-introduction" class="nav-link" data-scroll-target="#parquet-and-arrow-introduction"><span class="header-section-number">3.1</span> Parquet and Arrow Introduction</a></li>
+  <li><a href="#query-overview" id="toc-query-overview" class="nav-link" data-scroll-target="#query-overview"><span class="header-section-number">3.2</span> Query Overview</a></li>
+  <li><a href="#common-queries" id="toc-common-queries" class="nav-link" data-scroll-target="#common-queries"><span class="header-section-number">3.3</span> Common Queries</a>
+  <ul class="collapse">
+  <li><a href="#waterbody-data-from-a-specific-time-period" id="toc-waterbody-data-from-a-specific-time-period" class="nav-link" data-scroll-target="#waterbody-data-from-a-specific-time-period"><span class="header-section-number">3.3.1</span> Waterbody Data from a Specific Time Period</a></li>
+  </ul></li>
   </ul></li>
   </ul>
 <div class="toc-actions"><ul><li><a href="https://github.com/BWAM/bwam_analytics/edit/main/analytical_data_store.qmd" class="toc-action"><i class="bi bi-github"></i>Edit this page</a></li><li><a href="https://github.com/BWAM/bwam_analytics/issues/new" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></nav>
@@ -189,7 +201,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 
 <header id="title-block-header" class="quarto-title-block default">
 <div class="quarto-title">
-<h1 class="title"><span class="chapter-number">1</span>&nbsp; <span class="chapter-title">analytical_data_store</span></h1>
+<h1 class="title"><span class="chapter-number">2</span>&nbsp; <span class="chapter-title">analytical_data_store</span></h1>
 </div>
 
 
@@ -212,21 +224,18 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </header>
 
 
-<section id="analytical-data-store" class="level1" data-number="2">
-<h1 data-number="2"><span class="header-section-number">2</span> Analytical Data Store</h1>
-<p>The goal of Analytically Data Store is to provide a simple and fast way to access BWAM water quality data.</p>
+<section id="analytical-data-store" class="level1" data-number="3">
+<h1 data-number="3"><span class="header-section-number">3</span> Analytical Data Store</h1>
+<p>The goal of Analytical Data Store is to provide a simple and fast way to access BWAM water quality data.</p>
 <p>Data from the BWAM Oracle Data Warehouse, Water Quality Monitoring and Assessment (WQMA), have been extracted, collapsed into a two large tables, and saved as a <a href="https://parquet.apache.org/docs/overview/">parquet files</a>. The two tables represent:</p>
 <ol type="1">
 <li><p><u><strong>taxonomic_results.parquet:</strong></u> All the taxonomic count data and associated sample information.</p></li>
 <li><p><u><strong>results.parquet:</strong></u> All results (e.g., chemistry, habitat, survey questions, etc.) and associated sample information.</p></li>
 </ol>
-<p>We will use the packages <a href="https://arrow.apache.org/docs/r/"><code>arrow</code></a> to connect to the parquet file and <code>dplyr</code> to help us query data.</p>
+<p>We will use the packages <a href="https://arrow.apache.org/docs/r/"><code>arrow</code></a> to connect to the parquet file and <a href="https://dplyr.tidyverse.org/index.html"><code>dplyr</code></a> to help us query data.</p>
 <p>Let’s load the necessary packages and establish the file path to the <code>results</code> parquet file. The parquet file is stored on the L-drive and should be accessible to all DOW staff.</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(arrow)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-stderr">
-<pre><code>The tzdb package is not installed. Timezones will not be available to Arrow compute functions.</code></pre>
-</div>
 <div class="cell-output cell-output-stderr">
 <pre><code>
 Attaching package: 'arrow'</code></pre>
@@ -236,7 +245,7 @@ Attaching package: 'arrow'</code></pre>
 
     timestamp</code></pre>
 </div>
-<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(dplyr)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(dplyr)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stderr">
 <pre><code>
 Attaching package: 'dplyr'</code></pre>
@@ -251,55 +260,255 @@ Attaching package: 'dplyr'</code></pre>
 
     intersect, setdiff, setequal, union</code></pre>
 </div>
-<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="co"># One Big Table Directory -------------------------------------------------</span></span>
-<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>obt_dir <span class="ot">&lt;-</span> <span class="fu">file.path</span>(<span class="st">"L:"</span>,</span>
-<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>                     <span class="st">"DOW"</span>,</span>
-<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a>                     <span class="st">"BWAM Share"</span>,</span>
-<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a>                     <span class="st">"data"</span>,</span>
-<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a>                     <span class="st">"dev"</span>,</span>
-<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a>                     <span class="st">"parquet"</span>,</span>
-<span id="cb9-8"><a href="#cb9-8" aria-hidden="true" tabindex="-1"></a>                     <span class="st">"obt_result.parquet"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="co"># One Big Table Directory -------------------------------------------------</span></span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>obt_dir <span class="ot">&lt;-</span> <span class="fu">file.path</span>(<span class="st">"L:"</span>,</span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>                     <span class="st">"DOW"</span>,</span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>                     <span class="st">"BWAM Share"</span>,</span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a>                     <span class="st">"data"</span>,</span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a>                     <span class="st">"dev"</span>,</span>
+<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a>                     <span class="st">"parquet"</span>,</span>
+<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a>                     <span class="st">"obt_result.parquet"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<section id="just-give-me-data" class="level3" data-number="2.0.1">
-<h3 data-number="2.0.1" class="anchored" data-anchor-id="just-give-me-data"><span class="header-section-number">2.0.1</span> ⏩Just Give Me Data</h3>
+<section id="just-give-me-the-data" class="level3" data-number="3.0.1">
+<h3 data-number="3.0.1" class="anchored" data-anchor-id="just-give-me-the-data"><span class="header-section-number">3.0.1</span> Just Give Me the Data</h3>
 <p>Some example queries provided to get you started quickly…</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="co"># All data</span></span>
-<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>all_df <span class="ot">&lt;-</span> <span class="fu">open_dataset</span>(obt_dir) <span class="sc">|&gt;</span> </span>
-<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">collect</span>()</span>
-<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a><span class="co"># All lake data</span></span>
-<span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a>lake_df <span class="ot">&lt;-</span> <span class="fu">open_dataset</span>(obt_dir) <span class="sc">|&gt;</span> </span>
-<span id="cb10-7"><a href="#cb10-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(WATERBODY_TYPE <span class="sc">%in%</span> <span class="st">"lake"</span>) <span class="sc">|&gt;</span> </span>
-<span id="cb10-8"><a href="#cb10-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">collect</span>()</span>
-<span id="cb10-9"><a href="#cb10-9" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-10"><a href="#cb10-10" aria-hidden="true" tabindex="-1"></a><span class="co"># All TP results</span></span>
-<span id="cb10-11"><a href="#cb10-11" aria-hidden="true" tabindex="-1"></a>tp_df <span class="ot">&lt;-</span> <span class="fu">open_dataset</span>(obt_dir) <span class="sc">|&gt;</span> </span>
-<span id="cb10-12"><a href="#cb10-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(PARAMETER_NAME <span class="sc">%in%</span> <span class="st">"phosphorus"</span>,</span>
-<span id="cb10-13"><a href="#cb10-13" aria-hidden="true" tabindex="-1"></a>         FRACTION <span class="sc">%in%</span> <span class="st">"total"</span>) <span class="sc">|&gt;</span></span>
-<span id="cb10-14"><a href="#cb10-14" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(SITE_CODE,</span>
-<span id="cb10-15"><a href="#cb10-15" aria-hidden="true" tabindex="-1"></a>         EVENT_ID,</span>
-<span id="cb10-16"><a href="#cb10-16" aria-hidden="true" tabindex="-1"></a>         EVENT_DATETIME,</span>
-<span id="cb10-17"><a href="#cb10-17" aria-hidden="true" tabindex="-1"></a>         FRACTION,</span>
-<span id="cb10-18"><a href="#cb10-18" aria-hidden="true" tabindex="-1"></a>         PARAMETER_NAME,</span>
-<span id="cb10-19"><a href="#cb10-19" aria-hidden="true" tabindex="-1"></a>         RESULT_VALUE,</span>
-<span id="cb10-20"><a href="#cb10-20" aria-hidden="true" tabindex="-1"></a>         UNIT,</span>
-<span id="cb10-21"><a href="#cb10-21" aria-hidden="true" tabindex="-1"></a>         RESULT_QUALIFIER) <span class="sc">|&gt;</span> </span>
-<span id="cb10-22"><a href="#cb10-22" aria-hidden="true" tabindex="-1"></a>  <span class="fu">distinct</span>() <span class="sc">|&gt;</span> </span>
-<span id="cb10-23"><a href="#cb10-23" aria-hidden="true" tabindex="-1"></a>  <span class="fu">collect</span>()</span>
-<span id="cb10-24"><a href="#cb10-24" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-25"><a href="#cb10-25" aria-hidden="true" tabindex="-1"></a><span class="co"># Count of the number of sites with chloride data by waterbody type</span></span>
-<span id="cb10-26"><a href="#cb10-26" aria-hidden="true" tabindex="-1"></a>cl_count_df <span class="ot">&lt;-</span> <span class="fu">open_dataset</span>(obt_dir) <span class="sc">|&gt;</span> </span>
-<span id="cb10-27"><a href="#cb10-27" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(PARAMETER_NAME <span class="sc">%in%</span> <span class="st">"chloride"</span>) <span class="sc">|&gt;</span></span>
-<span id="cb10-28"><a href="#cb10-28" aria-hidden="true" tabindex="-1"></a>  <span class="fu">distinct</span>(WATERBODY_TYPE, SITE_CODE) <span class="sc">|&gt;</span> </span>
-<span id="cb10-29"><a href="#cb10-29" aria-hidden="true" tabindex="-1"></a>  <span class="fu">count</span>(WATERBODY_TYPE) <span class="sc">|&gt;</span> </span>
-<span id="cb10-30"><a href="#cb10-30" aria-hidden="true" tabindex="-1"></a>  <span class="fu">collect</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="co"># All data</span></span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>all_df <span class="ot">&lt;-</span> <span class="fu">open_dataset</span>(obt_dir) <span class="sc">|&gt;</span> </span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">collect</span>()</span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a><span class="co"># All lake data</span></span>
+<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a>lake_df <span class="ot">&lt;-</span> <span class="fu">open_dataset</span>(obt_dir) <span class="sc">|&gt;</span> </span>
+<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(WATERBODY_TYPE <span class="sc">%in%</span> <span class="st">"lake"</span>) <span class="sc">|&gt;</span> </span>
+<span id="cb9-8"><a href="#cb9-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">collect</span>()</span>
+<span id="cb9-9"><a href="#cb9-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-10"><a href="#cb9-10" aria-hidden="true" tabindex="-1"></a><span class="co"># All TP results</span></span>
+<span id="cb9-11"><a href="#cb9-11" aria-hidden="true" tabindex="-1"></a>tp_df <span class="ot">&lt;-</span> <span class="fu">open_dataset</span>(obt_dir) <span class="sc">|&gt;</span> </span>
+<span id="cb9-12"><a href="#cb9-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(PARAMETER_NAME <span class="sc">%in%</span> <span class="st">"phosphorus"</span>,</span>
+<span id="cb9-13"><a href="#cb9-13" aria-hidden="true" tabindex="-1"></a>         FRACTION <span class="sc">%in%</span> <span class="st">"total"</span>) <span class="sc">|&gt;</span></span>
+<span id="cb9-14"><a href="#cb9-14" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(SITE_CODE,</span>
+<span id="cb9-15"><a href="#cb9-15" aria-hidden="true" tabindex="-1"></a>         EVENT_ID,</span>
+<span id="cb9-16"><a href="#cb9-16" aria-hidden="true" tabindex="-1"></a>         EVENT_DATETIME,</span>
+<span id="cb9-17"><a href="#cb9-17" aria-hidden="true" tabindex="-1"></a>         FRACTION,</span>
+<span id="cb9-18"><a href="#cb9-18" aria-hidden="true" tabindex="-1"></a>         PARAMETER_NAME,</span>
+<span id="cb9-19"><a href="#cb9-19" aria-hidden="true" tabindex="-1"></a>         RESULT_VALUE,</span>
+<span id="cb9-20"><a href="#cb9-20" aria-hidden="true" tabindex="-1"></a>         UNIT,</span>
+<span id="cb9-21"><a href="#cb9-21" aria-hidden="true" tabindex="-1"></a>         RESULT_QUALIFIER) <span class="sc">|&gt;</span> </span>
+<span id="cb9-22"><a href="#cb9-22" aria-hidden="true" tabindex="-1"></a>  <span class="fu">distinct</span>() <span class="sc">|&gt;</span> </span>
+<span id="cb9-23"><a href="#cb9-23" aria-hidden="true" tabindex="-1"></a>  <span class="fu">collect</span>()</span>
+<span id="cb9-24"><a href="#cb9-24" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-25"><a href="#cb9-25" aria-hidden="true" tabindex="-1"></a><span class="co"># Count of the number of sites with chloride data by waterbody type</span></span>
+<span id="cb9-26"><a href="#cb9-26" aria-hidden="true" tabindex="-1"></a>cl_count_df <span class="ot">&lt;-</span> <span class="fu">open_dataset</span>(obt_dir) <span class="sc">|&gt;</span> </span>
+<span id="cb9-27"><a href="#cb9-27" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(PARAMETER_NAME <span class="sc">%in%</span> <span class="st">"chloride"</span>) <span class="sc">|&gt;</span></span>
+<span id="cb9-28"><a href="#cb9-28" aria-hidden="true" tabindex="-1"></a>  <span class="fu">distinct</span>(WATERBODY_TYPE, SITE_CODE) <span class="sc">|&gt;</span> </span>
+<span id="cb9-29"><a href="#cb9-29" aria-hidden="true" tabindex="-1"></a>  <span class="fu">count</span>(WATERBODY_TYPE) <span class="sc">|&gt;</span> </span>
+<span id="cb9-30"><a href="#cb9-30" aria-hidden="true" tabindex="-1"></a>  <span class="fu">collect</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
+</section>
+<section id="parquet-and-arrow-introduction" class="level2" data-number="3.1">
+<h2 data-number="3.1" class="anchored" data-anchor-id="parquet-and-arrow-introduction"><span class="header-section-number">3.1</span> Parquet and Arrow Introduction</h2>
+<blockquote class="blockquote">
+<p>Apache Parquet is an open source, column-oriented data file format designed for efficient data storage and retrieval. it provides high performance compression and encoding schemes to handle complex data in bulk and is supported in many programming language and analtyics tools.</p>
+<p>-<a href="https://parquet.apache.org/">Parquet (apache.org)</a></p>
+</blockquote>
+<p>As described above, parquet files are designed for efficient data retrieval. The data are stored in a columnar format, enabling rapid data retrievals. Using Apache Arrow, analytics can be performed in-memory (using RAM) on parquet files without the need to pull of the data into R or python. In general, this means queries can be performed very rapidly and you only load data you need into R or python.</p>
+<p>Additionally, parquet files have meta data that describe the column types (character, numeric, date, etc.). Unlike, column separated values (CSVs) or excel file (XLSX), there is no need to tell R or python what the data type of data are stored in each column. This enables users to query data and begin working with it immediately with out the overhead of specifying column type details with every new analysis.</p>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Note
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>For more information about Apache Parquet or Arrow, please visit:</p>
+<ul>
+<li><p>Parquet (apache.org)</p></li>
+<li><p>Apache Arrow | Apache Arrow</p></li>
+</ul>
+</div>
+</div>
+</section>
+<section id="query-overview" class="level2" data-number="3.2">
+<h2 data-number="3.2" class="anchored" data-anchor-id="query-overview"><span class="header-section-number">3.2</span> Query Overview</h2>
+<p>Parquet files can be queried using the python library, <a href="https://arrow.apache.org/docs/python/index.html"><code>PyArrow</code></a>, or the R package, <a href="https://arrow.apache.org/docs/r/index.html"><code>arrow</code></a>. The remainder of this chapter will focus on using the R package, <code>arrow</code>.</p>
+<p>Querying data is very similar to reading CSV files with <code>read.csv()</code>, but it is a two step process:</p>
+<ol type="1">
+<li><p>Connect to the parquet file using the <code>arrow</code> function, <code>open_dataset()</code></p></li>
+<li><p>Read data into R, using the <code>dplyr</code> function, <code>collect()</code></p></li>
+</ol>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb11"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>obt <span class="ot">&lt;-</span> arrow<span class="sc">::</span><span class="fu">open_dataset</span>(obt_dir)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>obt <span class="ot">&lt;-</span> <span class="fu">open_dataset</span>(obt_dir) <span class="sc">|&gt;</span> <span class="co"># 1</span></span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">collect</span>() <span class="co"># 2</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Tip
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Although it is not recommended for these data stores, you can use the <code>arrow</code> function, <a href="https://arrow.apache.org/docs/r/reference/read_parquet.html"><code>read_parquet()</code></a>, to perform the above query in a single step. This is not recommended, because in almost all instances you do not need all data in a data store for your analysis.</p>
+</div>
+</div>
+<p>The <code>open_dataset()</code> function can be followed by <code>dplyr</code> functions to query and perform analytics on the data store before bringing the data into R.</p>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Tip
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p><code>arrow</code> supports many <code>dplyr</code> functions, but not all. If a <code>dplyr</code> function is not support, do as much of the work as you can with <code>arrow</code>, <code>collect()</code> the data into R, and then use the <code>dplyr</code> function of interest.</p>
+</div>
+</div>
+<p>Let’s say we are interested in the major drainage basin names for basin numbers “01” and “02.” We can get to this information with the following query and we only need to load a 2x2 table into R as opposed to a 2,148,847x88 table.</p>
+<ol type="1">
+<li><p>Connect to the result data store.</p></li>
+<li><p>Limit the data to only the columns <code>BASIN</code> and <code>BASIN_NAME</code> and remove duplicates.</p></li>
+<li><p>Subset the rows to only those rows where <code>BASIN</code> is either “01” or “02.”</p></li>
+<li><p>Load the queried data into R.</p></li>
+</ol>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb11"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="fu">open_dataset</span>(obt_dir) <span class="sc">|&gt;</span> <span class="co"># 1</span></span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">distinct</span>(BASIN, BASIN_NAME) <span class="sc">|&gt;</span> <span class="co"># 2</span></span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(BASIN <span class="sc">%in%</span> <span class="fu">c</span>(<span class="st">"01"</span>, <span class="st">"02"</span>)) <span class="sc">|&gt;</span> <span class="co"># 3</span></span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">collect</span>() <span class="co"># 4</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 2 × 2
+  BASIN BASIN_NAME                   
+  &lt;chr&gt; &lt;chr&gt;                        
+1 01    Lake Erie-Niagara River Basin
+2 02    Allegheny River Basin        </code></pre>
+</div>
+</div>
+<div class="callout callout-style-default callout-important callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Important
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>When performing analytics, you must be cognizant of duplicates. These data sets have been denormalized – meaning some data have been made redundant due to a one-to-many join.</p>
+<p>Use the dplyr functions, <a href="https://dplyr.tidyverse.org/reference/select.html"><code>select()</code></a> and <a href="https://dplyr.tidyverse.org/reference/distinct.html"><code>distinct()</code></a>, to help you target only the columns of interest and remove redundant rows before performing analytics.</p>
+</div>
+</div>
+<p>You can also perform analytical summaries of the data store. Let’s say you are interested in the number of sites (<code>SITE_CODE</code>) that have total phosphorus data by waterbody type (<code>WATERBODY_TYPE)</code>. The following query limits the data to the rows and columns of interest and counts the number of sties in each waterbody type.</p>
+<ol type="1">
+<li><p>Connect to the result data store.</p></li>
+<li><p>Subset the rows to only the rows where:</p>
+<ul>
+<li><p><code>PARAMETER_NAME</code> matches “phosphorus”</p></li>
+<li><p><code>FRACTION</code> matches “total”</p></li>
+</ul></li>
+<li><p>Keep only the columns <code>WATERBODY_TYPE</code> and <code>SITE_CODE</code>, and remove any duplicate rows.</p></li>
+<li><p>Aggregate by <code>WATERBODY_TYPE</code> and count the number of rows.</p></li>
+<li><p>Load the queried data into R.</p></li>
+</ol>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb13"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="fu">open_dataset</span>(obt_dir) <span class="sc">|&gt;</span> <span class="co"># 1</span></span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(PARAMETER_NAME <span class="sc">%in%</span> <span class="st">"phosphorus"</span>, <span class="co"># 2</span></span>
+<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a>         FRACTION <span class="sc">%in%</span> <span class="st">"total"</span>) <span class="sc">|&gt;</span> <span class="co"># 3</span></span>
+<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">distinct</span>(WATERBODY_TYPE, SITE_CODE) <span class="sc">|&gt;</span> <span class="co"># 4</span></span>
+<span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">count</span>(WATERBODY_TYPE) <span class="sc">|&gt;</span> <span class="co"># 5</span></span>
+<span id="cb13-6"><a href="#cb13-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">collect</span>() <span class="co"># 6</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 4 × 2
+  WATERBODY_TYPE     n
+  &lt;chr&gt;          &lt;int&gt;
+1 lake            1363
+2 river_stream    1552
+3 outfall            2
+4 other              1</code></pre>
+</div>
+</div>
+<p>Or maybe you are interested in finding the average and standard deviation of total phosphorus observations in each waterbody type:</p>
+<ol type="1">
+<li><p>Connect to the result data store.</p></li>
+<li><p>Subset the rows to only the rows where:</p>
+<ul>
+<li><p><code>PARAMETER_NAME</code> matches “phosphorus”</p></li>
+<li><p><code>FRACTION</code> matches “total”</p></li>
+</ul></li>
+<li><p>Keep only the columns <code>WATERBODY_TYPE</code>, <code>SITE_CODE</code>, <code>EVENT_ID</code>, and <code>RESULT_VALUE</code> and remove any duplicate rows.</p></li>
+<li><p>Aggregate by <code>WATERBODY_TYPE</code>.</p></li>
+<li><p>Perform summary statistics removing <code>NA</code> results (<strong>see warning note below</strong>).</p></li>
+<li><p>Remove the aggregate/grouping from the data.</p></li>
+<li><p>Load the queried data into R.</p></li>
+</ol>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb15"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="fu">open_dataset</span>(obt_dir) <span class="sc">|&gt;</span> <span class="co"># 1</span></span>
+<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(PARAMETER_NAME <span class="sc">%in%</span> <span class="st">"phosphorus"</span>, <span class="co"># 2</span></span>
+<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a>         FRACTION <span class="sc">%in%</span> <span class="st">"total"</span>) <span class="sc">|&gt;</span> </span>
+<span id="cb15-4"><a href="#cb15-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">distinct</span>(WATERBODY_TYPE, SITE_CODE, EVENT_ID, RESULT_VALUE) <span class="sc">|&gt;</span> <span class="co"># 3</span></span>
+<span id="cb15-5"><a href="#cb15-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(WATERBODY_TYPE) <span class="sc">|&gt;</span> <span class="co"># 4</span></span>
+<span id="cb15-6"><a href="#cb15-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarize</span>( <span class="co"># 5</span></span>
+<span id="cb15-7"><a href="#cb15-7" aria-hidden="true" tabindex="-1"></a>    <span class="at">MEAN =</span> <span class="fu">mean</span>(RESULT_VALUE, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb15-8"><a href="#cb15-8" aria-hidden="true" tabindex="-1"></a>    <span class="at">SD =</span> <span class="fu">sd</span>(RESULT_VALUE, <span class="at">na.rm =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb15-9"><a href="#cb15-9" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">|&gt;</span> </span>
+<span id="cb15-10"><a href="#cb15-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ungroup</span>() <span class="sc">|&gt;</span>  <span class="co"># 6</span></span>
+<span id="cb15-11"><a href="#cb15-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">collect</span>() <span class="co"># 7</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 4 × 3
+  WATERBODY_TYPE   MEAN     SD
+  &lt;chr&gt;           &lt;dbl&gt;  &lt;dbl&gt;
+1 lake           0.0393  0.171
+2 river_stream   0.0607  0.153
+3 outfall        1.39    1.46 
+4 other          0.59   NA    </code></pre>
+</div>
+</div>
+<div class="callout callout-style-default callout-important callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Important
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Please note that the query above excludes non-detects using the <code>na.rm = TRUE</code> argument in the <code>mean()</code> and <code>sd()</code> calls. Therefore, the results are biased positively. If you are interested in a similar query, you need to decide how to handle non-detects and implement the decision prior to performing the summary statistics.</p>
+</div>
+</div>
+</section>
+<section id="common-queries" class="level2" data-number="3.3">
+<h2 data-number="3.3" class="anchored" data-anchor-id="common-queries"><span class="header-section-number">3.3</span> Common Queries</h2>
+<section id="waterbody-data-from-a-specific-time-period" class="level3" data-number="3.3.1">
+<h3 data-number="3.3.1" class="anchored" data-anchor-id="waterbody-data-from-a-specific-time-period"><span class="header-section-number">3.3.1</span> Waterbody Data from a Specific Time Period</h3>
+<p>What data were collected in Otsego Lake from 2022-2023?</p>
+<ol type="1">
+<li><p>Connect to the result data store.</p></li>
+<li><p>Subset the rows to only the rows where:</p>
+<ol type="1">
+<li><p>The waterbody name is “Otsego Lake”</p></li>
+<li><p>The sampling date is between 2022 and 2023</p></li>
+</ol></li>
+<li><p>Load the queried data into R.</p></li>
+</ol>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb17"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a>otsego_df <span class="ot">&lt;-</span> <span class="fu">open_dataset</span>(obt_dir) <span class="sc">|&gt;</span> <span class="co"># 1</span></span>
+<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(WATERBODY_NAME <span class="sc">%in%</span> <span class="st">"Otsego Lake"</span>, <span class="co"># 2.1</span></span>
+<span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a>         <span class="fu">between</span>(EVENT_DATETIME, <span class="co"># 2.2</span></span>
+<span id="cb17-4"><a href="#cb17-4" aria-hidden="true" tabindex="-1"></a>                 <span class="at">left =</span> lubridate<span class="sc">::</span><span class="fu">ymd</span>(<span class="st">"2022-01-01"</span>),</span>
+<span id="cb17-5"><a href="#cb17-5" aria-hidden="true" tabindex="-1"></a>                 <span class="at">right =</span> lubridate<span class="sc">::</span><span class="fu">ymd</span>(<span class="st">"2023-12-31"</span>))</span>
+<span id="cb17-6"><a href="#cb17-6" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">|&gt;</span> </span>
+<span id="cb17-7"><a href="#cb17-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">collect</span>() <span class="co"># 3</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 
 
+</section>
 </section>
 </section>
 
@@ -715,8 +924,8 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
 </script>
 <nav class="page-navigation">
   <div class="nav-page nav-page-previous">
-      <a href="./index.html" class="pagination-link" aria-label="Preface">
-        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text">Preface</span>
+      <a href="./wqma_oracle_db.html" class="pagination-link" aria-label="Untitled">
+        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text"><span class="chapter-number">1</span>&nbsp; <span class="chapter-title">Untitled</span></span>
       </a>          
   </div>
   <div class="nav-page nav-page-next">
