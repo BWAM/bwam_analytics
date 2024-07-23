@@ -3,8 +3,6 @@ title: "Analytical Data Store"
 author: "Zachary M. Smith"
 ---
 
-# Analytical Data Store
-
 The goal of Analytical Data Store is to provide a simple and fast way to access BWAM water quality data.
 
 Data from the BWAM Oracle Data Warehouse, Water Quality Monitoring and Assessment (WQMA), have been extracted, collapsed into a two large tables, and saved as a [parquet files](https://parquet.apache.org/docs/overview/). The two tables represent:
