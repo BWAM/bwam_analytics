@@ -1,5 +1,5 @@
 ---
-title: "analytical_data_store"
+title: "Analytical Data Store"
 author: "Zachary M. Smith"
 ---
 
@@ -43,7 +43,7 @@ all_df <- open_dataset(obt_dir) |>
 # All lake data
 lake_df <- open_dataset(obt_dir) |> 
   filter(WATERBODY_TYPE %in% "lake") |> 
-  collect()
+  collect() 
 
 # All TP results
 tp_df <- open_dataset(obt_dir) |> 

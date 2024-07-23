@@ -16,6 +16,8 @@ book:
 
     - analytical_data_store.qmd
 
+    - data_dictionary.qmd
+
     - references.qmd
 
 bibliography: references.bib

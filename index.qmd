@@ -1,3 +1,8 @@
+---
+title: "Landing Page"
+author: "Zachary M. Smith"
+---
+
 # Welcome {.unnumbered}
 
 The goals of this quarto book are to:
