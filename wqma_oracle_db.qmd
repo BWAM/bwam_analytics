@@ -2,8 +2,6 @@
 title: "WQMA Oracle Data Warehouse"
 ---
 
-# 
-
 ## Connecting to the WQMA Data Warehouse
 
 If you have not already, please setup an ODBC connection to the WQMA data warehouse following the instructions in the ODBC section.
