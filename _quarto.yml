@@ -16,6 +16,8 @@ book:
 
     - analytical_data_store.qmd
 
+    - generate_parquet_files.qmd
+
     - data_dictionary.qmd
 
     - references.qmd

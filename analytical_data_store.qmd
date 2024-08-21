@@ -7,9 +7,9 @@ The goal of Analytical Data Store is to provide a simple and fast way to access 
 
 Data from the BWAM Oracle Data Warehouse, Water Quality Monitoring and Assessment (WQMA), have been extracted, collapsed into a two large tables, and saved as a [parquet files](https://parquet.apache.org/docs/overview/). The two tables represent:
 
-1.  [**taxonomic_results.parquet:**]{.underline} All the taxonomic count data and associated sample information.
+1.  [**obt_taxa_abundance.parquet:**]{.underline} All the taxonomic count data and associated sample information.
 
-2.  [**results.parquet:**]{.underline} All results (e.g., chemistry, habitat, survey questions, etc.) and associated sample information.
+2.  [**obt_results.parquet:**]{.underline} All results (e.g., chemistry, habitat, survey questions, etc.) and associated sample information.
 
 We will use the packages [`arrow`](https://arrow.apache.org/docs/r/) to connect to the parquet file and [`dplyr`](https://dplyr.tidyverse.org/index.html) to help us query data.
 
@@ -19,14 +19,26 @@ Let's load the necessary packages and establish the file path to the `results` p
 library(arrow)
 library(dplyr)
 
-# One Big Table Directory -------------------------------------------------
-obt_dir <- file.path("L:",
-                     "DOW",
-                     "BWAM Share",
-                     "data",
-                     "dev",
-                     "parquet",
-                     "obt_result.parquet")
+# Directories
+obt_result_dir <- file.path(
+  "L:",
+  "DOW",
+  "BWAM Share",
+  "data",
+  "parquet",
+  "analytical_table_store",
+  "obt_result.parquet"
+)
+
+obt_taxa_dir <- file.path(
+  "L:",
+  "DOW",
+  "BWAM Share",
+  "data",
+  "parquet",
+  "analytical_table_store",
+  "obt_taxa_abundance.parquet"
+)
 ```
 
 ### Just Give Me the Data
@@ -35,16 +47,16 @@ Some example queries provided to get you started quickly...
 
 ```{r, eval=FALSE}
 # All data
-all_df <- open_dataset(obt_dir) |> 
+all_df <- open_dataset(obt_result_dir) |> 
   collect()
 
 # All lake data
-lake_df <- open_dataset(obt_dir) |> 
+lake_df <- open_dataset(obt_result_dir) |> 
   filter(WATERBODY_TYPE %in% "lake") |> 
   collect() 
 
 # All TP results
-tp_df <- open_dataset(obt_dir) |> 
+tp_df <- open_dataset(obt_result_dir) |> 
   filter(PARAMETER_NAME %in% "phosphorus",
          FRACTION %in% "total") |>
   select(SITE_CODE,
@@ -59,7 +71,7 @@ tp_df <- open_dataset(obt_dir) |>
   collect()
 
 # Count of the number of sites with chloride data by waterbody type
-cl_count_df <- open_dataset(obt_dir) |> 
+cl_count_df <- open_dataset(obt_result_dir) |> 
   filter(PARAMETER_NAME %in% "chloride") |>
   distinct(WATERBODY_TYPE, SITE_CODE) |> 
   count(WATERBODY_TYPE) |> 
@@ -95,7 +107,7 @@ Querying data is very similar to reading CSV files with `read.csv()`, but it is 
 2.  Read data into R, using the `dplyr` function, `collect()`
 
 ```{r, eval=FALSE}
-obt <- open_dataset(obt_dir) |> # 1
+obt <- open_dataset(obt_result_dir) |> # 1
   collect() # 2
 ```
 
@@ -120,7 +132,7 @@ Let's say we are interested in the major drainage basin names for basin numbers 
 4.  Load the queried data into R.
 
 ```{r}
-open_dataset(obt_dir) |> # 1
+open_dataset(obt_result_dir) |> # 1
   distinct(BASIN, BASIN_NAME) |> # 2
   filter(BASIN %in% c("01", "02")) |> # 3
   collect() # 4
@@ -149,7 +161,7 @@ You can also perform analytical summaries of the data store. Let's say you are i
 5.  Load the queried data into R.
 
 ```{r}
-open_dataset(obt_dir) |> # 1
+open_dataset(obt_result_dir) |> # 1
   filter(PARAMETER_NAME %in% "phosphorus", # 2
          FRACTION %in% "total") |> # 3
   distinct(WATERBODY_TYPE, SITE_CODE) |> # 4
@@ -178,7 +190,7 @@ Or maybe you are interested in finding the average and standard deviation of tot
 7.  Load the queried data into R.
 
 ```{r}
-open_dataset(obt_dir) |> # 1
+open_dataset(obt_result_dir) |> # 1
   filter(PARAMETER_NAME %in% "phosphorus", # 2
          FRACTION %in% "total") |> 
   distinct(WATERBODY_TYPE, SITE_CODE, EVENT_ID, RESULT_VALUE) |> # 3
@@ -212,7 +224,7 @@ What data were collected in Otsego Lake from 2022-2023?
 3.  Load the queried data into R.
 
 ```{r}
-otsego_df <- open_dataset(obt_dir) |> # 1
+otsego_df <- open_dataset(obt_result_dir) |> # 1
   filter(WATERBODY_NAME %in% "Otsego Lake", # 2.1
          between(EVENT_DATETIME, # 2.2
                  left = lubridate::ymd("2022-01-01"),

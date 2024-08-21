@@ -61,7 +61,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <script src="site_libs/quarto-search/fuse.min.js"></script>
 <script src="site_libs/quarto-search/quarto-search.js"></script>
 <meta name="quarto:offset" content="./">
-<link href="./data_dictionary.html" rel="next">
+<link href="./generate_parquet_files.html" rel="next">
 <link href="./wqma_oracle_db.html" rel="prev">
 <script src="site_libs/quarto-html/quarto.js"></script>
 <script src="site_libs/quarto-html/popper.min.js"></script>
@@ -155,8 +155,14 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </li>
         <li class="sidebar-item">
   <div class="sidebar-item-container"> 
+  <a href="./generate_parquet_files.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">4</span>&nbsp; <span class="chapter-title">Generate Parquet Files</span></span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
   <a href="./data_dictionary.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text"><span class="chapter-number">4</span>&nbsp; <span class="chapter-title">Data Dictionary</span></span></a>
+ <span class="menu-text"><span class="chapter-number">5</span>&nbsp; <span class="chapter-title">Data Dictionary</span></span></a>
   </div>
 </li>
         <li class="sidebar-item">
@@ -211,8 +217,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </header><p>The goal of Analytical Data Store is to provide a simple and fast way to access BWAM water quality data.</p>
 <p>Data from the BWAM Oracle Data Warehouse, Water Quality Monitoring and Assessment (WQMA), have been extracted, collapsed into a two large tables, and saved as a <a href="https://parquet.apache.org/docs/overview/">parquet files</a>. The two tables represent:</p>
 <ol type="1">
-<li><p><u><strong>taxonomic_results.parquet:</strong></u> All the taxonomic count data and associated sample information.</p></li>
-<li><p><u><strong>results.parquet:</strong></u> All results (e.g., chemistry, habitat, survey questions, etc.) and associated sample information.</p></li>
+<li><p><u><strong>obt_taxa_abundance.parquet:</strong></u> All the taxonomic count data and associated sample information.</p></li>
+<li><p><u><strong>obt_results.parquet:</strong></u> All results (e.g., chemistry, habitat, survey questions, etc.) and associated sample information.</p></li>
 </ol>
 <p>We will use the packages <a href="https://arrow.apache.org/docs/r/"><code>arrow</code></a> to connect to the parquet file and <a href="https://dplyr.tidyverse.org/index.html"><code>dplyr</code></a> to help us query data.</p>
 <p>Let’s load the necessary packages and establish the file path to the <code>results</code> parquet file. The parquet file is stored on the L-drive and should be accessible to all DOW staff.</p>
@@ -242,30 +248,42 @@ Attaching package: 'dplyr'</code></pre>
 
     intersect, setdiff, setequal, union</code></pre>
 </div>
-<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="co"># One Big Table Directory -------------------------------------------------</span></span>
-<span><span class="va">obt_dir</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/file.path.html">file.path</a></span><span class="op">(</span><span class="st">"L:"</span>,</span>
-<span>                     <span class="st">"DOW"</span>,</span>
-<span>                     <span class="st">"BWAM Share"</span>,</span>
-<span>                     <span class="st">"data"</span>,</span>
-<span>                     <span class="st">"dev"</span>,</span>
-<span>                     <span class="st">"parquet"</span>,</span>
-<span>                     <span class="st">"obt_result.parquet"</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="co"># Directories</span></span>
+<span><span class="va">obt_result_dir</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/file.path.html">file.path</a></span><span class="op">(</span></span>
+<span>  <span class="st">"L:"</span>,</span>
+<span>  <span class="st">"DOW"</span>,</span>
+<span>  <span class="st">"BWAM Share"</span>,</span>
+<span>  <span class="st">"data"</span>,</span>
+<span>  <span class="st">"parquet"</span>,</span>
+<span>  <span class="st">"analytical_table_store"</span>,</span>
+<span>  <span class="st">"obt_result.parquet"</span></span>
+<span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">obt_taxa_dir</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/file.path.html">file.path</a></span><span class="op">(</span></span>
+<span>  <span class="st">"L:"</span>,</span>
+<span>  <span class="st">"DOW"</span>,</span>
+<span>  <span class="st">"BWAM Share"</span>,</span>
+<span>  <span class="st">"data"</span>,</span>
+<span>  <span class="st">"parquet"</span>,</span>
+<span>  <span class="st">"analytical_table_store"</span>,</span>
+<span>  <span class="st">"obt_taxa_abundance.parquet"</span></span>
+<span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <section id="just-give-me-the-data" class="level3" data-number="3.0.1"><h3 data-number="3.0.1" class="anchored" data-anchor-id="just-give-me-the-data">
 <span class="header-section-number">3.0.1</span> Just Give Me the Data</h3>
 <p>Some example queries provided to get you started quickly…</p>
 <div class="cell">
 <div class="sourceCode" id="cb9"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="co"># All data</span></span>
-<span><span class="va">all_df</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/arrow/man/open_dataset.html">open_dataset</a></span><span class="op">(</span><span class="va">obt_dir</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
+<span><span class="va">all_df</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/arrow/man/open_dataset.html">open_dataset</a></span><span class="op">(</span><span class="va">obt_result_dir</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
 <span>  <span class="fu"><a href="https://rdrr.io/pkg/dplyr/man/compute.html">collect</a></span><span class="op">(</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># All lake data</span></span>
-<span><span class="va">lake_df</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/arrow/man/open_dataset.html">open_dataset</a></span><span class="op">(</span><span class="va">obt_dir</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
+<span><span class="va">lake_df</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/arrow/man/open_dataset.html">open_dataset</a></span><span class="op">(</span><span class="va">obt_result_dir</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
 <span>  <span class="fu"><a href="https://rdrr.io/pkg/dplyr/man/filter.html">filter</a></span><span class="op">(</span><span class="va">WATERBODY_TYPE</span> <span class="op"><a href="https://rdrr.io/r/base/match.html">%in%</a></span> <span class="st">"lake"</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
 <span>  <span class="fu"><a href="https://rdrr.io/pkg/dplyr/man/compute.html">collect</a></span><span class="op">(</span><span class="op">)</span> </span>
 <span></span>
 <span><span class="co"># All TP results</span></span>
-<span><span class="va">tp_df</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/arrow/man/open_dataset.html">open_dataset</a></span><span class="op">(</span><span class="va">obt_dir</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
+<span><span class="va">tp_df</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/arrow/man/open_dataset.html">open_dataset</a></span><span class="op">(</span><span class="va">obt_result_dir</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
 <span>  <span class="fu"><a href="https://rdrr.io/pkg/dplyr/man/filter.html">filter</a></span><span class="op">(</span><span class="va">PARAMETER_NAME</span> <span class="op"><a href="https://rdrr.io/r/base/match.html">%in%</a></span> <span class="st">"phosphorus"</span>,</span>
 <span>         <span class="va">FRACTION</span> <span class="op"><a href="https://rdrr.io/r/base/match.html">%in%</a></span> <span class="st">"total"</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="https://rdrr.io/pkg/dplyr/man/select.html">select</a></span><span class="op">(</span><span class="va">SITE_CODE</span>,</span>
@@ -280,7 +298,7 @@ Attaching package: 'dplyr'</code></pre>
 <span>  <span class="fu"><a href="https://rdrr.io/pkg/dplyr/man/compute.html">collect</a></span><span class="op">(</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># Count of the number of sites with chloride data by waterbody type</span></span>
-<span><span class="va">cl_count_df</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/arrow/man/open_dataset.html">open_dataset</a></span><span class="op">(</span><span class="va">obt_dir</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
+<span><span class="va">cl_count_df</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/arrow/man/open_dataset.html">open_dataset</a></span><span class="op">(</span><span class="va">obt_result_dir</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
 <span>  <span class="fu"><a href="https://rdrr.io/pkg/dplyr/man/filter.html">filter</a></span><span class="op">(</span><span class="va">PARAMETER_NAME</span> <span class="op"><a href="https://rdrr.io/r/base/match.html">%in%</a></span> <span class="st">"chloride"</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="https://rdrr.io/pkg/dplyr/man/distinct.html">distinct</a></span><span class="op">(</span><span class="va">WATERBODY_TYPE</span>, <span class="va">SITE_CODE</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
 <span>  <span class="fu"><a href="https://rdrr.io/pkg/dplyr/man/count.html">count</a></span><span class="op">(</span><span class="va">WATERBODY_TYPE</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
@@ -320,7 +338,7 @@ Note
 <li><p>Read data into R, using the <code>dplyr</code> function, <code><a href="https://rdrr.io/pkg/dplyr/man/compute.html">collect()</a></code></p></li>
 </ol>
 <div class="cell">
-<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">obt</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/arrow/man/open_dataset.html">open_dataset</a></span><span class="op">(</span><span class="va">obt_dir</span><span class="op">)</span> <span class="op">|&gt;</span> <span class="co"># 1</span></span>
+<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">obt</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/arrow/man/open_dataset.html">open_dataset</a></span><span class="op">(</span><span class="va">obt_result_dir</span><span class="op">)</span> <span class="op">|&gt;</span> <span class="co"># 1</span></span>
 <span>  <span class="fu"><a href="https://rdrr.io/pkg/dplyr/man/compute.html">collect</a></span><span class="op">(</span><span class="op">)</span> <span class="co"># 2</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <div class="callout callout-style-default callout-tip callout-titled">
@@ -358,7 +376,7 @@ Tip
 <li><p>Load the queried data into R.</p></li>
 </ol>
 <div class="cell">
-<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/pkg/arrow/man/open_dataset.html">open_dataset</a></span><span class="op">(</span><span class="va">obt_dir</span><span class="op">)</span> <span class="op">|&gt;</span> <span class="co"># 1</span></span>
+<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/pkg/arrow/man/open_dataset.html">open_dataset</a></span><span class="op">(</span><span class="va">obt_result_dir</span><span class="op">)</span> <span class="op">|&gt;</span> <span class="co"># 1</span></span>
 <span>  <span class="fu"><a href="https://rdrr.io/pkg/dplyr/man/distinct.html">distinct</a></span><span class="op">(</span><span class="va">BASIN</span>, <span class="va">BASIN_NAME</span><span class="op">)</span> <span class="op">|&gt;</span> <span class="co"># 2</span></span>
 <span>  <span class="fu"><a href="https://rdrr.io/pkg/dplyr/man/filter.html">filter</a></span><span class="op">(</span><span class="va">BASIN</span> <span class="op"><a href="https://rdrr.io/r/base/match.html">%in%</a></span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"01"</span>, <span class="st">"02"</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span> <span class="co"># 3</span></span>
 <span>  <span class="fu"><a href="https://rdrr.io/pkg/dplyr/man/compute.html">collect</a></span><span class="op">(</span><span class="op">)</span> <span class="co"># 4</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
@@ -399,7 +417,7 @@ Important
 <li><p>Load the queried data into R.</p></li>
 </ol>
 <div class="cell">
-<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/pkg/arrow/man/open_dataset.html">open_dataset</a></span><span class="op">(</span><span class="va">obt_dir</span><span class="op">)</span> <span class="op">|&gt;</span> <span class="co"># 1</span></span>
+<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/pkg/arrow/man/open_dataset.html">open_dataset</a></span><span class="op">(</span><span class="va">obt_result_dir</span><span class="op">)</span> <span class="op">|&gt;</span> <span class="co"># 1</span></span>
 <span>  <span class="fu"><a href="https://rdrr.io/pkg/dplyr/man/filter.html">filter</a></span><span class="op">(</span><span class="va">PARAMETER_NAME</span> <span class="op"><a href="https://rdrr.io/r/base/match.html">%in%</a></span> <span class="st">"phosphorus"</span>, <span class="co"># 2</span></span>
 <span>         <span class="va">FRACTION</span> <span class="op"><a href="https://rdrr.io/r/base/match.html">%in%</a></span> <span class="st">"total"</span><span class="op">)</span> <span class="op">|&gt;</span> <span class="co"># 3</span></span>
 <span>  <span class="fu"><a href="https://rdrr.io/pkg/dplyr/man/distinct.html">distinct</a></span><span class="op">(</span><span class="va">WATERBODY_TYPE</span>, <span class="va">SITE_CODE</span><span class="op">)</span> <span class="op">|&gt;</span> <span class="co"># 4</span></span>
@@ -409,10 +427,10 @@ Important
 <pre><code># A tibble: 4 × 2
   WATERBODY_TYPE     n
   &lt;chr&gt;          &lt;int&gt;
-1 lake            1363
-2 river_stream    1552
-3 outfall            2
-4 other              1</code></pre>
+1 lake            1349
+2 river_stream    1376
+3 other              1
+4 outfall            2</code></pre>
 </div>
 </div>
 <p>Or maybe you are interested in finding the average and standard deviation of total phosphorus observations in each waterbody type:</p>
@@ -432,7 +450,7 @@ Important
 <li><p>Load the queried data into R.</p></li>
 </ol>
 <div class="cell">
-<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/pkg/arrow/man/open_dataset.html">open_dataset</a></span><span class="op">(</span><span class="va">obt_dir</span><span class="op">)</span> <span class="op">|&gt;</span> <span class="co"># 1</span></span>
+<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/pkg/arrow/man/open_dataset.html">open_dataset</a></span><span class="op">(</span><span class="va">obt_result_dir</span><span class="op">)</span> <span class="op">|&gt;</span> <span class="co"># 1</span></span>
 <span>  <span class="fu"><a href="https://rdrr.io/pkg/dplyr/man/filter.html">filter</a></span><span class="op">(</span><span class="va">PARAMETER_NAME</span> <span class="op"><a href="https://rdrr.io/r/base/match.html">%in%</a></span> <span class="st">"phosphorus"</span>, <span class="co"># 2</span></span>
 <span>         <span class="va">FRACTION</span> <span class="op"><a href="https://rdrr.io/r/base/match.html">%in%</a></span> <span class="st">"total"</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
 <span>  <span class="fu"><a href="https://rdrr.io/pkg/dplyr/man/distinct.html">distinct</a></span><span class="op">(</span><span class="va">WATERBODY_TYPE</span>, <span class="va">SITE_CODE</span>, <span class="va">EVENT_ID</span>, <span class="va">RESULT_VALUE</span><span class="op">)</span> <span class="op">|&gt;</span> <span class="co"># 3</span></span>
@@ -447,10 +465,10 @@ Important
 <pre><code># A tibble: 4 × 3
   WATERBODY_TYPE   MEAN     SD
   &lt;chr&gt;           &lt;dbl&gt;  &lt;dbl&gt;
-1 lake           0.0393  0.171
-2 river_stream   0.0607  0.153
-3 outfall        1.39    1.46 
-4 other          0.59   NA    </code></pre>
+1 lake           0.0391  0.173
+2 river_stream   0.0601  0.149
+3 other          0.59   NA    
+4 outfall        1.39    1.46 </code></pre>
 </div>
 </div>
 <div class="callout callout-style-default callout-important callout-titled">
@@ -483,7 +501,7 @@ Important
 <li><p>Load the queried data into R.</p></li>
 </ol>
 <div class="cell">
-<div class="sourceCode" id="cb17"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">otsego_df</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/arrow/man/open_dataset.html">open_dataset</a></span><span class="op">(</span><span class="va">obt_dir</span><span class="op">)</span> <span class="op">|&gt;</span> <span class="co"># 1</span></span>
+<div class="sourceCode" id="cb17"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">otsego_df</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/arrow/man/open_dataset.html">open_dataset</a></span><span class="op">(</span><span class="va">obt_result_dir</span><span class="op">)</span> <span class="op">|&gt;</span> <span class="co"># 1</span></span>
 <span>  <span class="fu"><a href="https://rdrr.io/pkg/dplyr/man/filter.html">filter</a></span><span class="op">(</span><span class="va">WATERBODY_NAME</span> <span class="op"><a href="https://rdrr.io/r/base/match.html">%in%</a></span> <span class="st">"Otsego Lake"</span>, <span class="co"># 2.1</span></span>
 <span>         <span class="fu"><a href="https://rdrr.io/pkg/dplyr/man/between.html">between</a></span><span class="op">(</span><span class="va">EVENT_DATETIME</span>, <span class="co"># 2.2</span></span>
 <span>                 left <span class="op">=</span> <span class="fu">lubridate</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/lubridate/man/ymd.html">ymd</a></span><span class="op">(</span><span class="st">"2022-01-01"</span><span class="op">)</span>,</span>
@@ -907,8 +925,8 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
       </a>          
   </div>
   <div class="nav-page nav-page-next">
-      <a href="./data_dictionary.html" class="pagination-link" aria-label="Data Dictionary">
-        <span class="nav-page-text"><span class="chapter-number">4</span>&nbsp; <span class="chapter-title">Data Dictionary</span></span> <i class="bi bi-arrow-right-short"></i>
+      <a href="./generate_parquet_files.html" class="pagination-link" aria-label="Generate Parquet Files">
+        <span class="nav-page-text"><span class="chapter-number">4</span>&nbsp; <span class="chapter-title">Generate Parquet Files</span></span> <i class="bi bi-arrow-right-short"></i>
       </a>
   </div>
 </nav>
