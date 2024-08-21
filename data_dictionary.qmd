@@ -16,6 +16,8 @@ data("columns_dictionary", package = "nexus")
 The data dictionary empowers data users to quickly become familiar with a data set. Although the table is simple, it is critical to operations that this table remain up-to-date, accurate, and easy to understand.
 
 If you find any errors or do not find the documentation clear, please open a [GitHub Issue](https://github.com/BWAM/bwam_analytics/issues) and we can collectively work towards a solution.
+
+The data dictionary is [stored and maintained in the **nexus** package](https://github.com/BWAM/nexus/blob/main/data-raw/dictionary/columns_dictionary.R).
 :::
 
 The dictionary provides:
