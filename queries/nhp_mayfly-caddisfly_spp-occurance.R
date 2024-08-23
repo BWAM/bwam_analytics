@@ -48,13 +48,37 @@ final_df <- open_dataset(obt_taxa_dir) |>
   distinct() |>
   collect()
 
-# Write XLSX --------------------------------------------------------------
-openxlsx2::write_xlsx(
-  x = final_df,
-  file = file.path(export_dir,
-                   "nysdec_ephem-trichop_spp-occurance.xlsx"),
-  as_table = TRUE,
-  overwrite = TRUE,
-  table_style = "TableStyleMedium2"
-)
+
+# Data Dictionary ---------------------------------------------------------
+dictionary <- nexus::columns_dictionary |>
+  filter(column_name %in% names(final_df),
+         !grepl("surrogate", definition)) |>
+  select(column_name, definition) |>
+  distinct() |>
+  arrange(names(final_df))
+
+
+# Create a workbook -------------------------------------------------------
+
+wb <- openxlsx2::wb_workbook() |>
+  openxlsx2::wb_add_worksheet(
+    sheet = "Data"
+  ) |>
+  openxlsx2::wb_add_data_table(
+    x = final_df,
+    table_style = "TableStyleMedium2"
+  ) |>
+  openxlsx2::wb_add_worksheet(
+    sheet = "Dictionary"
+  ) |>
+  openxlsx2::wb_add_data_table(
+    x = dictionary,
+    table_style = "TableStyleMedium2"
+  )
+
+# Export to XLSX ----------------------------------------------------------
+openxlsx2::wb_save(wb = wb,
+                   file = file.path(export_dir,
+                                    "nysdec_ephem-trichop_spp-occurance.xlsx"))
+
 
