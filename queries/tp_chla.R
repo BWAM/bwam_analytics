@@ -1,6 +1,6 @@
-# Request for TP and CHLA data
+# Request for TP, CHLA, and Phyco data
 # Request made on 8/19/2024
-# Request made by Sarah Rickard
+# Request made by Sarah Rickard and Lew McCaffrey
 
 # Load Dependencies -------------------------------------------------------
 library(arrow)
@@ -31,16 +31,17 @@ export_dir <- file.path(
 
 
 parameters <- open_dataset(obt_result_dir) |>
-  select(PARAMETER_NAME, FRACTION, METHOD_SPECIATION, UNIT) |>
+  select(PARAMETER_NAME, FRACTION, METHOD_SPECIATION, UNIT, SAMPLE_SOURCE) |>
   distinct() |>
   collect()
 
 final_df <- open_dataset(obt_result_dir) |>
   filter(
     WATERBODY_TYPE %in% "lake",
-    EVENT_DATETIME > as.Date("1900-01-01"),
+    EVENT_DATETIME > as.Date("2019-01-01"),
     (PARAMETER_NAME %in% "phosphorus" & FRACTION %in% "total") |
-    (PARAMETER_NAME %in% c("chlorophyll-a", "chlorophyll_a") & UNIT %in% "ug/L")
+    (PARAMETER_NAME %in% c("chlorophyll-a", "chlorophyll_a") & UNIT %in% "ug/L") |
+      PARAMETER_NAME %in% "chlorophyll-a-concentration_cyanobacteria_bluegreen"
   ) |>
   select(
     WIPWL, WATERBODY_TYPE, EVENT_ID, EVENT_DATETIME,
@@ -61,7 +62,7 @@ final_df <- open_dataset(obt_result_dir) |>
 openxlsx2::write_xlsx(
   x = final_df,
   file = file.path(export_dir,
-                   "tp_chla.xlsx"),
+                   "tp_chla_phyco.xlsx"),
   as_table = TRUE,
   overwrite = TRUE
 )
