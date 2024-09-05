@@ -44,7 +44,7 @@ final_df <- open_dataset(obt_result_dir) |>
       PARAMETER_NAME %in% "chlorophyll-a-concentration_cyanobacteria_bluegreen"
   ) |>
   select(
-    WIPWL, WATERBODY_TYPE, EVENT_ID, EVENT_DATETIME,
+    WIPWL, WATERBODY_NAME, WATERBODY_TYPE, EVENT_ID, EVENT_DATETIME,
     LATITUDE, LONGITUDE,
     SAMPLE_LOCATION,
     SAMPLE_TYPE, SAMPLE_ORGANIZATION, SAMPLE_DEPTH_METERS,
