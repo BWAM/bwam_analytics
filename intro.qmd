@@ -2,7 +2,7 @@
 
 This is new content. 
 
-This is a book created from markdown and executable code.
+This is a book created from rmarkdown and executable code.
 
 See @knuth84 for additional discussion of literate programming.
 
