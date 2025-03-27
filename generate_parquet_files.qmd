@@ -5,7 +5,7 @@ title: "Generate Parquet Files"
 ```{r, echo=FALSE}
 # TRUE = execute code in this document. This takes a long time.
 # FALSE = do not execute code in this document. This just provides documentation of the process.
-run_obt = FALSE
+run_obt = TRUE
 ```
 
 Load the necessary packages into your environment.
@@ -31,13 +31,11 @@ build_dir <- file.path(base_dir, "build_tables")
 analytical_dir <- file.path(base_dir, "analytical_table_store")
 ```
 
-Connect to the WQMA Oracle database and establish the data model.
+Connect to the WQMA Oracle database.
 
 ```{r, eval=run_obt}
 con <- get_connected(username = "your-user-name",
                      keyring = "wqmap")
-
-data_model <- get_data_model(con = con)
 ```
 
 # Export Tables from WQMA
@@ -45,10 +43,12 @@ data_model <- get_data_model(con = con)
 Query each of the tables from the WQMA Oracle database and save them as a parquet file to the L-drive.
 
 ```{r, eval=run_obt}
+data_model <- get_data_model(con = con)
+
 purrr::walk(names(data_model),
             .f = function(.x) {
               print(paste("Querying:",.x))
-              tictoc::tic()
+              # tictoc::tic()
               df <- get_big_table(con = con,
                             table = .x,
                             n = 10000)
@@ -56,7 +56,7 @@ purrr::walk(names(data_model),
               arrow::write_parquet(x = df,
                      sink = file.path(build_dir,
                                  paste0(.x, ".parquet")))
-              print(tictoc::toc()$callback_msg)
+              #print(tictoc::toc()$callback_msg)
               gc()
             })
 
@@ -152,7 +152,6 @@ dbExecute(
           SELECT * FROM SAMPLE_OBT
           LEFT JOIN TAXONOMIC_ABUNDANCE USING (SAMPLE_ID)
           LEFT JOIN TAXONOMY USING (TAXON_ID)
-          LEFT JOIN TAXONOMIC_TRAIT USING (TAXON_ID)
           WHERE SAMPLE_TYPE = 'macroinvertebrate_abundance' AND
           SAMPLE_TYPE IS NOT NULL"
 )
