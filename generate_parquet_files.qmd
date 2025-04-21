@@ -112,15 +112,26 @@ Join RESULT table and its parent tables (i.e., RESULT_QUALIFIER, PARAMETER, and 
 ```{r, eval=run_obt}
 dbExecute(
   conn = duckdb_con,
-  statement = "CREATE OR REPLACE TABLE OBT_RESULT AS
-          SELECT * FROM SAMPLE_OBT
-          LEFT JOIN RESULT USING (SAMPLE_ID)
-          LEFT JOIN RESULT_QUALIFIER USING (RESULT_QUALIFIER)
-          LEFT JOIN PARAMETER USING (PARAMETER_ID)
-          LEFT JOIN PARAMETER_NAME USING (PARAMETER_NAME)
-          WHERE SAMPLE_TYPE != 'macroinvertebrate_abundance' AND
-          SAMPLE_TYPE IS NOT NULL AND
-          RESULT_QUALIFIER != 'R'"
+  statement = "
+  CREATE OR REPLACE TABLE OBT_RESULT AS
+    SELECT * FROM SAMPLE_OBT
+    LEFT JOIN RESULT USING (SAMPLE_ID)
+    LEFT JOIN RESULT_QUALIFIER USING (RESULT_QUALIFIER)
+    LEFT JOIN PARAMETER USING (PARAMETER_ID)
+    LEFT JOIN PARAMETER_NAME USING (PARAMETER_NAME)
+    WHERE SAMPLE_TYPE != 'macroinvertebrate_abundance' AND
+      SAMPLE_TYPE IS NOT NULL
+    ORDER BY 
+      WATERBODY_TYPE,
+      BASIN, 
+      PUBLIC_WATER_SUPPLY, 
+      BEACH_PRESENT, 
+      WATERBODY_CODE, 
+      SITE_CODE, 
+      COUNTY,
+      PARAMETER_NAME, 
+      EVENT_DATETIME
+  "
 )
 ```
 
@@ -132,8 +143,15 @@ dbExecute(
   statement = glue(
     "COPY
           (SELECT * FROM OBT_RESULT)
+          TO '{analytical_dir}/obt_result_including_rejects.parquet'
+          (FORMAT 'parquet');
+          
+          COPY
+          (SELECT * FROM OBT_RESULT WHERE RESULT_QUALIFIER != 'R')
           TO '{analytical_dir}/obt_result.parquet'
-          (FORMAT 'parquet')"
+          (FORMAT 'parquet');
+    
+    "
   )
 )
 ```
@@ -148,12 +166,24 @@ Join TAXONOMIC_ABUNDANCE table and its parent tables (i.e., TAXONOMY, TAXONOMIC_
 ```{r, eval=run_obt}
 dbExecute(
   conn = duckdb_con,
-  statement = "CREATE OR REPLACE TABLE OBT_TAXA_ABUNDANCE AS
-          SELECT * FROM SAMPLE_OBT
-          LEFT JOIN TAXONOMIC_ABUNDANCE USING (SAMPLE_ID)
-          LEFT JOIN TAXONOMY USING (TAXON_ID)
-          WHERE SAMPLE_TYPE = 'macroinvertebrate_abundance' AND
-          SAMPLE_TYPE IS NOT NULL"
+  statement = "
+  CREATE OR REPLACE TABLE OBT_TAXA_ABUNDANCE AS
+    SELECT * FROM SAMPLE_OBT
+    LEFT JOIN TAXONOMIC_ABUNDANCE USING (SAMPLE_ID)
+    LEFT JOIN TAXONOMY USING (TAXON_ID)
+    WHERE SAMPLE_TYPE = 'macroinvertebrate_abundance' AND
+      SAMPLE_TYPE IS NOT NULL
+    ORDER BY 
+      WATERBODY_TYPE, 
+      BASIN, 
+      PUBLIC_WATER_SUPPLY, 
+      BEACH_PRESENT, 
+      WATERBODY_CODE, 
+      SITE_CODE, 
+      COUNTY,
+      TAXON_ID, 
+      EVENT_DATETIME
+  "
 )
 ```
 
