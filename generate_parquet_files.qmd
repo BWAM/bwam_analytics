@@ -5,7 +5,7 @@ title: "Generate Parquet Files"
 ```{r, echo=FALSE}
 # TRUE = execute code in this document. This takes a long time.
 # FALSE = do not execute code in this document. This just provides documentation of the process.
-run_obt = TRUE
+run_obt = FALSE
 ```
 
 Load the necessary packages into your environment.
