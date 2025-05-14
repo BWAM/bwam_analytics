@@ -98,5 +98,55 @@
     "crumbs": [
       "<span class='chapter-number'>5</span>  <span class='chapter-title'>Data Dictionary</span>"
     ]
+  },
+  {
+    "objectID": "wqx_api.html",
+    "href": "wqx_api.html",
+    "title": "6  WQX API",
+    "section": "",
+    "text": "6.1 Initial Requirements\nIn order to do so, you must have a CDX account and generate a private encryption key because the process checks for your credentials:",
+    "crumbs": [
+      "<span class='chapter-number'>6</span>  <span class='chapter-title'>WQX API</span>"
+    ]
+  },
+  {
+    "objectID": "wqx_api.html#initial-requirements",
+    "href": "wqx_api.html#initial-requirements",
+    "title": "6  WQX API",
+    "section": "",
+    "text": "6.1.0.1 1. Create CDX account\n\nFollow these instructions to create an account.\n\nWQX Organization ID: 21NYDECA_WQX\nWQX Organization Name: New York State Dec Division of Water\n\n\n\n\n6.1.0.2 2. Generate Private Encryption Key\n\nOnce you are logged into WQXWeb, go to “Setup” → “My User Account Details” and click the “Create New Key” button at the bottom of the page.\nCopy this key to your clipboard and click save.\nvisit here for more info",
+    "crumbs": [
+      "<span class='chapter-number'>6</span>  <span class='chapter-title'>WQX API</span>"
+    ]
+  },
+  {
+    "objectID": "wqx_api.html#setup",
+    "href": "wqx_api.html#setup",
+    "title": "6  WQX API",
+    "section": "6.2 Setup",
+    "text": "6.2 Setup\nEnsure the following packages are installed\n\nlibrary(httr2) # for working with the WQXWeb API\nlibrary(keyring) # for securely storing the private encryption key\nlibrary(digest) # for encrypting your credentials\nlibrary(jsonlite) # for encryption and handling of data \nlibrary(glue) # for concatonating strings\n\nFirst, store your private encryption key by running the following. A window will pop up, prompting you to paste your key. Once you paste and hit okay, your key will be stored under the name “WQXWeb”.\n\nkeyring::key_set(service = \"WQXWeb\")\n\nDefine some universal variables\n\nuser_id: your username for logging into CDX, typically FirstnameLastname\norganization_id: this is DEC’s ID in WQX\nbase_uri: the base Uniform Resource Identifier, essentially the first part of the url to the api that will be used every time\n\n\nuser_id &lt;- \"YourUserID\"\n\norganization_id &lt;- \"21NYDECA_WQX\"\n\nbase_uri &lt;- \"https://cdx.epa.gov/WQXWeb/api/\"",
+    "crumbs": [
+      "<span class='chapter-number'>6</span>  <span class='chapter-title'>WQX API</span>"
+    ]
+  },
+  {
+    "objectID": "wqx_api.html#wqx-request-function",
+    "href": "wqx_api.html#wqx-request-function",
+    "title": "6  WQX API",
+    "section": "6.3 WQX Request Function",
+    "text": "6.3 WQX Request Function\nThis function will be used to perform all service calls to the WQXWeb API, whether it is uploading data or pulling data.\nEvery call requires a header that contains:\n\nX-UserID: the user ID as defined above\nX-Stamp: the timestamp when the request is made in UTC Time in the format mm/dd/yyyy hh:mi:ss AM\nX-Signature: a concatenated string made up of the User ID, Timestamp, URI, and Request Method that is encrypted using the HMAC-SHA256 encryption algorithm\nContent-Type: the format in which you would like the response, here we chose JSON\n\n\nwqx_request &lt;- function(request_method, user_id, uri, data_file_path = NULL){\n  \n  # type of content returned\n  contenttype &lt;- 'application/json'\n  \n  private_key &lt;- jsonlite::base64_dec(keyring::key_get(service = \"WQXWeb\"))\n  \n  # time must be UTC and in format mm/dd/yyyy hh:mi:ss AM\n  # %I is standard time 01-12 hours, while %H is military time 01-24 hours\n  timestamp &lt;- format(as.POSIXct(Sys.time(), tz = \"UTC\"), \"%m/%d/%Y %I:%M:%S %p\") \n  \n  # make signature\n  signature &lt;- paste0(user_id, timestamp, uri, request_method) \n  \n  # encrypt signature\n  encrypted_sig &lt;- digest::hmac(key = private_key, object = signature, algo = \"sha256\", raw = T)|&gt; \n    jsonlite::base64_enc() \n  \n  \n  if (request_method == \"POST\") {\n    r &lt;- request(uri) |&gt;\n      req_headers(\"X-UserID\" = user_id,\n                  \"X-Stamp\" = timestamp,\n                  \"X-Signature\" = encrypted_sig,\n                  \"Content-Type\" = contenttype) |&gt;\n      req_body_file(data_file_path) \n    \n    r |&gt;\n      req_perform()\n  }\n  \n  if (request_method == \"GET\") {\n    r &lt;- request(uri) |&gt;\n      req_headers(\"X-UserID\" = user_id,\n                  \"X-Stamp\" = timestamp,\n                  \"X-Signature\" = encrypted_sig,\n                  \"Content-Type\" = contenttype)\n    r |&gt;\n      req_perform()\n  }\n}",
+    "crumbs": [
+      "<span class='chapter-number'>6</span>  <span class='chapter-title'>WQX API</span>"
+    ]
+  },
+  {
+    "objectID": "wqx_api.html#service-calls",
+    "href": "wqx_api.html#service-calls",
+    "title": "6  WQX API",
+    "section": "6.4 Service Calls",
+    "text": "6.4 Service Calls\n\n6.4.1 Upload\nUpload a file to the web server (to be imported).\nDefine the path to the file to be uploaded. Then, the filename will be extracted and used to complete the URI for this service call.\n\nfile_path &lt;- \"file/path/to/data\"\n\nfilename &lt;- basename(file_path)\n\nuri_upload &lt;- glue::glue(\"{base_uri}Upload/{filename}\")\n\nMake the service call:\n\nresp &lt;- wqx_request(request_method = \"POST\",\n                    user_id = user_id,\n                    uri = uri_upload,\n                    data_file_path = file_path)\n\n\n\n6.4.2 StartImport\nStart importing the file that was just uploaded in the previous step\n\n\n6.4.3 StartXmlExport\nCreate the XML submission file that goes to CDX\n\n\n6.4.4 SubmitDatasetToCdx\nSubmit the data set to CDX\n\n\n6.4.5 SubmitFileToCdx\nSubmit a preciously uploaded WQX XML file to CDX\n\n\n6.4.6 GetStatus\nGet the status for a specific dataset For large imports (longer than 20 minutes), calling this service periodically will guarantee that the server will not shutdown before the import completes.\n\n\n6.4.7 GetDocumentList\nGet the list of available documents for a dataset\n\n\n6.4.8 Projects\nGet all the projects for our organization that exist in WQXWeb.\n\nuri_projects &lt;- glue::glue(\"{base_uri}Projects?OrganizationIdentifiersCsv={organization_id}\")\n\nresp &lt;- wqx_request(request_method = \"GET\",\n                    user_id = user_id,\n                    uri = uri_projects)\n\n# coerce response into dataframe\nprojects_df &lt;- resp |&gt; resp_body_string() |&gt; fromJSON(flatten = TRUE)\n\n\n\n6.4.9 MonitoringLocations\nGet all the monitoring locations for our organization that exist in WQXWeb",
+    "crumbs": [
+      "<span class='chapter-number'>6</span>  <span class='chapter-title'>WQX API</span>"
+    ]
   }
 ]

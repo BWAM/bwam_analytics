@@ -20,6 +20,8 @@ book:
 
     - data_dictionary.qmd
 
+    - wqx_api.qmd
+
     - references.qmd
 
 bibliography: references.bib
