@@ -48,7 +48,7 @@ data_model <- get_data_model(con = con)
 purrr::walk(names(data_model),
             .f = function(.x) {
               print(paste("Querying:",.x))
-              # tictoc::tic()
+              tictoc::tic()
               df <- get_big_table(con = con,
                             table = .x,
                             n = 10000)
@@ -56,7 +56,7 @@ purrr::walk(names(data_model),
               arrow::write_parquet(x = df,
                      sink = file.path(build_dir,
                                  paste0(.x, ".parquet")))
-              #print(tictoc::toc()$callback_msg)
+              print(tictoc::toc()$callback_msg)
               gc()
             })
 

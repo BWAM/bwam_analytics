@@ -34,7 +34,7 @@ To work with the data warehouse, you must first connect to it. This is very simi
 
 ```{r, echo=FALSE}
 con <- nexus::get_connected(username = "ZSMITH",
-                            keyring = "WQMAP")
+                            keyring = "WQMA_PROD")
 ```
 
 ```{r, eval=FALSE}
@@ -383,7 +383,7 @@ I was directed to the Oracle Instant Client from [Posit's webpage on connecting 
 
         3.  Install the ODBC package to your Downloads folder. You cannot download the file directly to your C-drive (C:\\).
 
-        4.  Right-click on the downloaded zip file in your Downloads folder, select Extract All, browse to your C-drive (C:\\), select the folder you created in step 2.1.5, and select Extract.
+        4.  Right-click on the downloaded zip file in your Downloads folder, select Extract All, browse to your C-drive (C:\\), select the folder you created in step 2.1.5, and select Extract. \*\*If a new sub-folder is created in directory of your Basic or Basic Light package, you must copy all of the contents from the sub-folder and paste them into the same directory as the Basic package. If you try to run *`odbc_install.exe`* (Step 2.4) from the sub-folder the program will not install correctly. I believe the issue is that if *`odbc_install.exe`* is run in the sub-folder it cannot find the necessary *Instant Client Basic or Basic Light package* content in the parent folder*.*
 
     3.  The C-drive directory, created in step 2.1, must be put on your computers PATH.
 
@@ -414,6 +414,8 @@ I was directed to the Oracle Instant Client from [Posit's webpage on connecting 
         1.  Navigate to the folder created in step 2.2.4.
 
         2.  Double-click the *`odbc_install.exe.`*
+
+        3.  Not much happens when the executable runs. It will look like a flash on your screen for a split second.
 
 3.  Setup a 64-bit ODBC connection.
 
