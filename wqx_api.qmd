@@ -1,0 +1,178 @@
+---
+title: "WQX API"
+author: "Amanda Herbst"
+format: html
+---
+
+The Water Quality eXchange (WQX) API allows us to directly connect to WQXWeb and facilitate data uploads without having to manually do so within WQXWeb.
+
+## Initial Requirements
+
+In order to do so, you must have a CDX account and generate a private encryption key because the process checks for your credentials:
+
+#### 1. Create CDX account
+
+-   Follow [these instructions](https://www.epa.gov/waterdata/wqx-web-account-registration) to create an account.
+    -   WQX Organization ID: `21NYDECA_WQX`
+    -   WQX Organization Name: `New York State Dec Division of Water`
+
+#### 2. Generate Private Encryption Key
+
+-   Once you are logged into WQXWeb, go to "Setup" → "My User Account Details" and click the "Create New Key" button at the bottom of the page.
+-   Copy this key to your clipboard and **click save**.
+-   visit [here](https://www.epa.gov/waterdata/wqx-web-application-programming-interface) for more info
+
+## Setup
+
+Ensure the following packages are installed
+
+```{r, eval = FALSE}
+library(httr2) # for working with the WQXWeb API
+library(keyring) # for securely storing the private encryption key
+library(digest) # for encrypting your credentials
+library(jsonlite) # for encryption and handling of data 
+library(glue) # for concatonating strings
+```
+
+First, store your private encryption key by running the following. A window will pop up, prompting you to paste your key. Once you paste and hit okay, your key will be stored under the name "WQXWeb".
+
+```{r, eval = FALSE}
+keyring::key_set(service = "WQXWeb")
+```
+
+Define some universal variables
+
+-   `user_id`: your username for logging into CDX, typically FirstnameLastname
+-   `organization_id`: this is DEC's ID in WQX
+-   `base_uri`: the base Uniform Resource Identifier, essentially the first part of the url to the api that will be used every time
+
+```{r, eval = FALSE}
+user_id <- "YourUserID"
+
+organization_id <- "21NYDECA_WQX"
+
+base_uri <- "https://cdx.epa.gov/WQXWeb/api/"
+```
+
+## WQX Request Function
+
+This function will be used to perform all service calls to the WQXWeb API, whether it is uploading data or pulling data.
+
+Every call requires a header that contains:
+
+-   `X-UserID`: the user ID as defined above
+-   `X-Stamp`: the timestamp when the request is made in UTC Time in the format `mm/dd/yyyy hh:mi:ss AM`
+-   `X-Signature`: a concatenated string made up of the User ID, Timestamp, URI, and Request Method that is encrypted using the HMAC-SHA256 encryption algorithm
+-   `Content-Type`: the format in which you would like the response, here we chose JSON
+
+```{r, eval = FALSE}
+wqx_request <- function(request_method, user_id, uri, data_file_path = NULL){
+  
+  # type of content returned
+  contenttype <- 'application/json'
+  
+  private_key <- jsonlite::base64_dec(keyring::key_get(service = "WQXWeb"))
+  
+  # time must be UTC and in format mm/dd/yyyy hh:mi:ss AM
+  # %I is standard time 01-12 hours, while %H is military time 01-24 hours
+  timestamp <- format(as.POSIXct(Sys.time(), tz = "UTC"), "%m/%d/%Y %I:%M:%S %p") 
+  
+  # make signature
+  signature <- paste0(user_id, timestamp, uri, request_method) 
+  
+  # encrypt signature
+  encrypted_sig <- digest::hmac(key = private_key, object = signature, algo = "sha256", raw = T)|> 
+    jsonlite::base64_enc() 
+  
+  
+  if (request_method == "POST") {
+    r <- request(uri) |>
+      req_headers("X-UserID" = user_id,
+                  "X-Stamp" = timestamp,
+                  "X-Signature" = encrypted_sig,
+                  "Content-Type" = contenttype) |>
+      req_body_file(data_file_path) 
+    
+    r |>
+      req_perform()
+  }
+  
+  if (request_method == "GET") {
+    r <- request(uri) |>
+      req_headers("X-UserID" = user_id,
+                  "X-Stamp" = timestamp,
+                  "X-Signature" = encrypted_sig,
+                  "Content-Type" = contenttype)
+    r |>
+      req_perform()
+  }
+}
+```
+
+## Service Calls
+
+### Upload
+
+*Upload a file to the web server (to be imported).*
+
+Define the path to the file to be uploaded. Then, the filename will be extracted and used to complete the URI for this service call.
+
+```{r, eval = FALSE}
+file_path <- "file/path/to/data"
+
+filename <- basename(file_path)
+
+uri_upload <- glue::glue("{base_uri}Upload/{filename}")
+```
+
+Make the service call:
+
+```{r, eval = FALSE}
+resp <- wqx_request(request_method = "POST",
+                    user_id = user_id,
+                    uri = uri_upload,
+                    data_file_path = file_path)
+```
+
+### StartImport
+
+*Start importing the file that was just uploaded in the previous step*
+
+### StartXmlExport
+
+*Create the XML submission file that goes to CDX*
+
+### SubmitDatasetToCdx
+
+*Submit the data set to CDX*
+
+### SubmitFileToCdx
+
+*Submit a preciously uploaded WQX XML file to CDX*
+
+### GetStatus
+
+*Get the status for a specific dataset For large imports (longer than 20 minutes), calling this service periodically will guarantee that the server will not shutdown before the import completes.*
+
+### GetDocumentList
+
+*Get the list of available documents for a dataset*
+
+### Projects
+
+*Get all the projects for our organization that exist in WQXWeb.*
+
+```{r, eval = FALSE}
+uri_projects <- glue::glue("{base_uri}Projects?OrganizationIdentifiersCsv={organization_id}")
+
+resp <- wqx_request(request_method = "GET",
+                    user_id = user_id,
+                    uri = uri_projects)
+
+# coerce response into dataframe
+projects_df <- resp |> resp_body_string() |> fromJSON(flatten = TRUE)
+```
+
+### MonitoringLocations
+
+*Get all the monitoring locations for our organization that exist in WQXWeb*
